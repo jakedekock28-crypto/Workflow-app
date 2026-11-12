@@ -5,11 +5,16 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build && npm --prefix worker run typecheck",
     "preview": "vite preview",
-    "test": "vitest run"
+    "test": "vitest run src && npm --prefix worker test",
+    "worker:dev": "npm --prefix worker run dev",
+    "worker:deploy": "npm --prefix worker run deploy",
+    "worker:db:migrate:local": "npm --prefix worker run db:migrate:local",
+    "worker:db:migrate:remote": "npm --prefix worker run db:migrate:remote"
   },
   "dependencies": {
+    "@marsidev/react-turnstile": "^1.6.3",
     "date-fns": "^4.1.0",
     "framer-motion": "^12.23.0",
     "libphonenumber-js": "^1.13.16",

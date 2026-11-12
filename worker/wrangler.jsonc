@@ -1,0 +1,22 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "workflow-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-11-10",
+  "workers_dev": true,
+  "vars": {
+    "APP_ENV": "production",
+    "APP_URL": "https://jakedekock28-crypto.github.io/Workflow-app/",
+    "TURNSTILE_SITE_KEY": "SET_IN_CLOUDFLARE_DASHBOARD",
+    "RESEND_FROM": "Workflow <no-reply@example.com>",
+    "AUTH_DAILY_GLOBAL_LIMIT": "90"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "workflow-production",
+      "database_id": "00000000-0000-0000-0000-000000000001",
+      "migrations_dir": "migrations"
+    }
+  ]
+}

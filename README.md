@@ -10,9 +10,9 @@ Workflow is a personal organiser for events, tasks and reminders. It works in a 
 - Light and dark themes, local JSON backup and restore, and `.ics` calendar export.
 - An installable PWA with an offline app shell.
 
-The app has no account or server. It starts with generic sample content that you can remove in **Settings → Clear sample data**.
+The app works locally in your browser and can optionally sync to a private account through the Phase 2 Cloudflare service described below. It starts with generic sample content that you can remove in **Settings → Clear sample data**. Cloud sync is not active on the published site until you complete the one-time provider setup steps in Part 5.
 
-> **Publishing note:** GitHub Pages is a public website, including when the repository itself is private. Do not put real names, plans, contact details, credentials or private sample data in source files. Runtime data is stored in your browser unless you later choose to sync it to Google.
+> **Privacy note:** GitHub Pages is a public website, including when the repository itself is private. Do not put real names, plans, contact details, credentials or private sample data in source files. Local mode stores data in this browser. Cloud mode stores your account data in a private D1 database and sends sign-in links through Resend. Provider secrets belong in Cloudflare, never in the frontend or GitHub variables.
 
 ### Google integration status
 
@@ -208,4 +208,188 @@ npm run build
 
 ### Later integration work
 
-The next approved stage is the hosted notification service (Cloudflare Worker, D1, scheduled Cron Trigger, and Resend for email). It is not included here. Do not add provider keys to this frontend or GitHub Pages settings. A later backend stage needs separate deployment and secret setup instructions; SMS automation is excluded from the approved design.
+## Part 5: Turn on private cloud accounts and sync (Phase 2)
+
+This part is optional. Skip it if you only want to use the app on one browser/device. Phase 2 adds email-link sign-in and private cloud sync using Cloudflare Workers + D1, Resend, and Cloudflare Turnstile. **It does not send delegated-task reminders yet.** Scheduled task notifications are a later phase; SMS sending is not part of the approved design.
+
+There are two kinds of work below:
+
+- **You do once in provider dashboards:** make accounts, verify a sending domain, create a database/security widget, and store service secrets.
+- **You do in this project:** install Worker packages, configure its public IDs/settings, run database migrations, and deploy the Worker.
+
+### Before you start: accounts and information you need
+
+Have access to:
+
+1. The GitHub repository and permission to edit its settings and Actions variables.
+2. A Cloudflare account where you can create a Worker, D1 database, and Turnstile widget.
+3. A domain you control for sending sign-in emails. Resend requires you to verify the domain by adding the DNS records it provides. You can use a subdomain such as `mail.example.com`; do not use `example.com` literally.
+4. A Resend account and an API key.
+
+Keep the Cloudflare and Resend dashboards open. Provider dashboards may use different labels over time, but the values you need are named below.
+
+### A. Set up and deploy the Worker (project + Cloudflare)
+
+Open the project’s `worker` folder in a terminal. In VS Code, choose **Terminal → New Terminal**, then run:
+
+```sh
+cd worker
+npm install
+npx wrangler login
+```
+
+`wrangler login` opens a browser so you can authorize this computer with your Cloudflare account.
+
+#### 1. Create the database
+
+In that same terminal, run:
+
+```sh
+npx wrangler d1 create workflow-production
+```
+
+Cloudflare prints a `database_id`. Open `worker/wrangler.jsonc` and replace the example `database_id` (`00000000-0000-0000-0000-000000000001`) with that value. The ID identifies the database; it is not a password. Keep `database_name` as `workflow-production`.
+
+Apply the tables to the Cloudflare database:
+
+```sh
+npm run db:migrate:remote
+```
+
+#### 2. Verify Resend email sending
+
+In Resend, add a sending domain and follow its instructions to add the listed DNS records at the company where you manage the domain. Wait until Resend shows the domain as verified. Create an API key with permission to send from that verified domain.
+
+Open `worker/wrangler.jsonc` and replace `no-reply@example.com` in `RESEND_FROM` with an address at your verified domain, for example `Workflow <no-reply@mail.example.com>`.
+
+Store the Resend API key as a Cloudflare Worker secret (the command will prompt for it; paste it at the prompt):
+
+```sh
+npx wrangler secret put RESEND_API_KEY
+```
+
+#### 3. Add the sign-in security check
+
+In the Cloudflare dashboard, open **Turnstile**, add a widget, and allow the hostname `jakedekock28-crypto.github.io`. Copy its **site key** into `TURNSTILE_SITE_KEY` in `worker/wrangler.jsonc` (replace `SET_IN_CLOUDFLARE_DASHBOARD`).
+
+Store the widget’s **secret key** separately as a Worker secret:
+
+```sh
+npx wrangler secret put TURNSTILE_SECRET_KEY
+```
+
+The site key is public and is used by the browser form. The secret key must stay in Cloudflare. The Worker checks the challenge on the server and checks that its hostname matches `APP_URL`.
+
+#### 4. Confirm the app address and deploy
+
+The supplied `APP_URL` in `worker/wrangler.jsonc` already points to this project’s GitHub Pages address:
+
+```text
+https://jakedekock28-crypto.github.io/Workflow-app/
+```
+
+If your published app uses a different hostname, change `APP_URL` to the full app URL, update the allowed hostname in the Turnstile widget, and save. Then deploy from the `worker` folder:
+
+```sh
+npm run deploy
+```
+
+Wrangler prints the Worker address, normally like `https://workflow-api.<your-workers-subdomain>.workers.dev`. Open that address with `/health` appended. You should see `{"status":"ok"}`. Save the base Worker address without `/health`; you need it for GitHub in the next section.
+
+### B. Connect the published website (GitHub)
+
+This step tells the website which Worker to contact. The Worker address is public, so it is an **Actions variable**, not a secret.
+
+1. Open the repository on GitHub and choose **Settings**.
+2. Choose **Secrets and variables → Actions → Variables → New repository variable**.
+3. Set the name to `VITE_API_BASE_URL`.
+4. Set the value to the Worker base address from the previous section, for example `https://workflow-api.<your-workers-subdomain>.workers.dev` (no `/health` and no trailing route).
+5. Save it, then open **Actions** and choose **Deploy Workflow to GitHub Pages → Run workflow**. If the button is unavailable, make a small commit and push it to `main`; the normal workflow will deploy the app.
+6. When the run succeeds, reload the published site. Open **Settings → Account** to request a sign-in link.
+
+The existing deploy workflow reads `VITE_API_BASE_URL` during its build. Do not put `RESEND_API_KEY` or `TURNSTILE_SECRET_KEY` in GitHub; only the Worker needs those secrets.
+
+### C. Sign in and move existing browser data into the cloud
+
+1. Open the published app while online and go to **Settings → Account**.
+2. Enter your email and complete the security check. Select **Send sign-in link**.
+3. Open the email from Workflow on the same browser/device and select its link. The link expires after 10 minutes and can only be used once.
+4. If this is a new, empty account and this browser has data, the app asks whether to copy the browser’s data into the account. Confirm to import it, or cancel to start the cloud account empty. Import does not overwrite an account that already contains data.
+5. Open the app on another device/browser and sign in with the same email. Cloud data will load there. Keep making JSON backups from **Settings → Back up now**.
+
+Cloud sessions expire after 7 days, then you can request another link. If you close or lose the one-time link before opening it, request a new one.
+
+### Optional: run the Worker locally
+
+Use this to try the cloud sign-in flow before deploying. You need a valid Resend API key and a sender address verified with Resend to receive real email. Turnstile publishes test keys for local testing; these always pass and must never be used in production.
+
+From the project root, copy the example secrets file, then open `worker/.dev.vars` and add your Resend key:
+
+```sh
+cp worker/.dev.vars.example worker/.dev.vars
+```
+
+In `worker/.dev.vars`, set `RESEND_API_KEY` to your real Resend key. The example Turnstile secret is a test key. In one terminal, start the Worker in development mode:
+
+```sh
+npm run worker:dev -- --var APP_ENV:development --var APP_URL:http://localhost:5173/ --var TURNSTILE_SITE_KEY:1x00000000000000000000AA
+```
+
+In a second terminal, from the project root, start the frontend with the local Worker URL:
+
+```sh
+VITE_API_BASE_URL=http://localhost:8787 npm run dev
+```
+
+Open the localhost address printed by Vite. `.dev.vars` is ignored by Git. Never commit it or paste API keys into source files.
+
+### What it costs and what the limits mean
+
+At the current provider free tiers, a small personal deployment can cost **$0/month** if you stay under their included limits:
+
+| Service | Current free allowance relevant here | What can cause a charge or stop |
+| --- | --- | --- |
+| Cloudflare Workers | 100,000 requests/day on Workers Free | The app may need the $5/month Workers Paid plan for higher limits or operational needs. |
+| Cloudflare D1 | 5 million rows read/day, 100,000 rows written/day, and up to 5 GB total free account storage | Free daily limits are enforced; requests can fail until the daily reset if exceeded. |
+| Cloudflare Turnstile | Free plan, including up to 20 widgets/account | No per-challenge charge on the stated free plan. |
+| Resend | 100 emails/day and 3,000 emails/month | Phase 2 caps sign-in sends at 90/day to leave margin under the daily limit. Exceeding Resend plan limits may block delivery or require a paid plan. |
+
+These are provider limits, not a promise that every usage pattern will remain free. Check the live [Workers pricing](https://developers.cloudflare.com/workers/platform/pricing/), [D1 pricing](https://developers.cloudflare.com/d1/platform/pricing/), [Turnstile plans](https://developers.cloudflare.com/turnstile/plans/), and [Resend pricing](https://resend.com/pricing) before expanding use. Phase 2 sends only sign-in email. Task reminders and their email volume are not included in these estimates.
+
+### Important privacy and current limitations
+
+- Local-only data stays in that browser. Cloud accounts sync only after setup and sign-in.
+- Cloud sign-in uses a browser session token stored locally in the browser for up to 7 days. Anyone who can run malicious script in the app page could potentially access that token; keep the published app and browser up to date and use a trusted device.
+- Your account is private to your verified email, and database queries are scoped to that account. Provider administrators still operate the infrastructure under their service terms.
+- Keep regular JSON backups. Cloud sync is not a backup against mistakes: edits and deletions sync too.
+- Phase 2 does not send task assignments, reminders, SMS, or push notifications. It does not yet have a notification scheduler or delivery log.
+- Offline edits queue in this browser and sync when it reconnects. If two devices edit the same item while offline, the most recent pending/local version can win when syncing; there is no conflict review screen yet.
+
+### If something goes wrong
+
+| Problem | Check this |
+| --- | --- |
+| **Settings → Account** says cloud sync is not configured | Confirm the GitHub Actions variable is named exactly `VITE_API_BASE_URL`, then rerun the Pages deployment. |
+| Worker `/health` does not show `{"status":"ok"}` | Confirm the Worker deployed successfully in the Cloudflare dashboard and use its exact `workers.dev` address. |
+| Sign-in says the security check failed | Confirm the Turnstile site key and secret belong to the same widget, the app hostname is allowed, and `APP_URL` is correct. |
+| No sign-in email arrives | Check Resend’s domain verification, sender address, API key secret, Resend email logs, and spam folder. |
+| Login email says send failed | Check `RESEND_API_KEY` and `RESEND_FROM` Worker settings/secrets, then redeploy after changing a non-secret `wrangler.jsonc` value. |
+| Sync says the session expired | Request a new sign-in email; sessions last 7 days. |
+| Local Worker has missing tables | From the project root, run `npm run worker:db:migrate:local`, then restart `npm run worker:dev`. |
+
+### Phase 2 developer checks
+
+From the project root, run:
+
+```sh
+npm install
+npm --prefix worker install
+npm test
+npm run build
+```
+
+The tests cover local data migration, phone formatting, message templates, reminder calculations, cloud offline merge behavior, and account data isolation in D1. Build output is split into smaller JavaScript files so the previous Vite warning about a chunk larger than 500 kB no longer appears.
+
+## Later phase
+
+The next stage, Phase 3, is the hosted notification service: scheduled task reminders through a Cloudflare Cron Trigger and Resend email, plus delivery logging and retries. It is not part of Phase 2. SMS automation is excluded from the approved design.
