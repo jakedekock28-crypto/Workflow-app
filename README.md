@@ -1,104 +1,117 @@
 # Workflow
 
-Workflow helps you keep events, tasks and reminders in one place. It works on a phone or computer and saves your information in the browser on that device. There is no account or server.
+Workflow is a personal organiser for events, tasks and reminders. It works in a web browser and can be installed on a phone. Your information is saved in that browser on that device.
 
-## 1. Open the project
+## What works today
+
+- Today dashboard, month calendar, agenda and week planner.
+- Colour-coded areas and sections, events, task checklists and Biv planning prompts.
+- Delegated tasks, task templates, recurring tasks, subtasks and search filters.
+- Light and dark themes, local JSON backup and restore, and `.ics` calendar export.
+- An installable PWA with an offline app shell.
+
+The app has no account or server. It starts with generic sample content that you can remove in **Settings → Clear sample data**.
+
+> **Publishing note:** GitHub Pages is a public website, including when the repository itself is private. Do not put real names, plans, contact details, credentials or private sample data in source files. Runtime data is stored in your browser unless you later choose to sync it to Google.
+
+### Google integration status
+
+Google sign-in, Calendar sync, Drive attachments and Drive cloud backup are **not implemented in this version**. There is a separate [Google integration guide](GOOGLE-SETUP.md) for the Google Cloud and GitHub steps you will need to do yourself after the integration code is added. Setting up Google Cloud alone will not add Google buttons or sync to the current app.
+
+## Part 1: Run the app on your computer
+
+### Step 1: Open the right folder
 
 1. Open **VS Code**.
 2. Choose **File → Open Folder…**.
-3. Select the `workflow` folder. It contains `package.json`, `src`, and `.github`.
-4. In VS Code, choose **Terminal → New Terminal**. The terminal should open in the `workflow` folder.
+3. Select this repository's `workflow` folder. It is the folder containing `package.json`, `src`, and `.github`.
+4. Choose **Terminal → New Terminal**. Commands below must be run from this `workflow` folder.
 
-## 2. Install what the project needs
+### Step 2: Install Node.js
 
-You need Node.js and npm. If they are not installed, download the **LTS** version from [nodejs.org](https://nodejs.org/en/download/), install it, then quit and reopen VS Code.
+Workflow needs Node.js and npm. If `node -v` or `npm -v` below reports “command not found”, install the current **LTS** version from [nodejs.org](https://nodejs.org/en/download/), then quit and reopen VS Code.
 
-In the VS Code terminal, check that both commands show a version number:
+In the VS Code terminal, run:
 
 ```sh
 node -v
 npm -v
 ```
 
-Now install the project packages:
+Both commands should print a version number.
+
+### Step 3: Install the project packages
+
+In the same terminal, run:
 
 ```sh
 npm install
 ```
 
-You only need to install the packages again if the project dependencies change.
+This downloads the libraries the app needs. Normally you only do this once, or again after dependencies change.
 
-## 3. Run Workflow on your computer
+### Step 4: Start the app
 
-In the same VS Code terminal, run:
+Run:
 
 ```sh
 npm run dev
 ```
 
-Open the `http://localhost:...` link printed in the terminal. Keep the terminal running while you use the app. To stop it, click the terminal and press **Control+C**.
+Open the `http://localhost:...` address printed in the terminal. Leave the terminal running while you use the app. To stop the app, click the terminal and press **Control+C**.
 
-The first time you open Workflow, it shows generic example events and tasks. You can remove them in **Settings → Clear sample data**.
+## Part 2: Try the app on your phone over Wi-Fi
 
-## 4. Try it on your phone
+This is a local preview, not the installed published app.
 
-This is for trying the app locally. Your phone and computer must be on the same Wi-Fi.
-
-1. Stop the server with **Control+C** if it is still running.
-2. In the VS Code terminal, run:
+1. Make sure your phone and computer are connected to the same Wi-Fi network.
+2. In the VS Code terminal, stop any running server with **Control+C**.
+3. Start the server so other devices on your Wi-Fi can reach it:
 
    ```sh
    npm run dev -- --host
    ```
 
-3. Find the **Network** link printed in the terminal.
-4. Type that link into your phone’s browser.
+4. Find the **Network** address printed by Vite.
+5. Type that address into your phone's browser.
 
-For the installed phone app, use the published HTTPS website in step 7 instead.
+If the Network address does not open, check that both devices are on the same Wi-Fi and that your computer's firewall allows the connection. For a lasting phone install, publish the app and use its HTTPS address in Part 4.
 
-## 5. Put the project on GitHub
+## Part 3: Publish the app with GitHub Pages
 
-The project already has its local Git history and three commits. Create an **empty** GitHub repository for it; do not add a README, licence or `.gitignore` on GitHub because those files are already here.
+### Step 1: Open the existing GitHub repository
 
-1. On [GitHub](https://github.com), sign in and choose **New repository**.
-2. Give it a name, such as `workflow-organiser`. Choose **Public** if you want to use GitHub Pages on a free GitHub plan.
-3. Leave **Add a README**, **Add .gitignore**, and **Choose a license** turned off, then create the repository.
-4. On the new repository page, copy its HTTPS address. It looks like `https://github.com/YOUR-NAME/workflow-organiser.git`.
-5. Return to the VS Code terminal. Make sure it is open in the `workflow` folder, then connect and upload the project. Replace the example address with the one you copied:
+This project is already connected to the [`Workflow-app` repository](https://github.com/jakedekock28-crypto/Workflow-app). You do **not** need to create another repository or run `git remote add origin`.
 
-   ```sh
-   git remote add origin https://github.com/YOUR-NAME/workflow-organiser.git
-   git push -u origin main
-   ```
+1. Sign in at [github.com](https://github.com).
+2. Open [jakedekock28-crypto/Workflow-app](https://github.com/jakedekock28-crypto/Workflow-app).
+3. Confirm the latest project files appear on the `main` branch.
 
-If GitHub asks you to sign in or authorise Git, follow its prompts.
-
-## 6. Turn on GitHub Pages
+### Step 2: Turn on GitHub Pages
 
 Do this on **GitHub in your web browser**:
 
-1. Open your repository and choose **Settings**.
+1. Open the repository and choose **Settings**.
 2. In the left menu, choose **Pages**.
 3. Under **Build and deployment**, set **Source** to **GitHub Actions**.
-4. Open the **Actions** tab. Wait for **Deploy Workflow to GitHub Pages** to finish with a green check. Click the run to see any error details.
-5. Return to **Settings → Pages** and open the website link GitHub shows.
+4. Open the repository's **Actions** tab. Wait for **Deploy Workflow to GitHub Pages** to finish with a green check. Select a run to see its build or deployment details.
+5. Return to **Settings → Pages** and open the website address GitHub shows.
 
-GitHub Pages uses GitHub Actions for this project, as described in the [GitHub Pages setup guide](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site).
+GitHub's [Pages publishing guide](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site) describes these settings. This repository already contains the build and deploy workflow at `.github/workflows/deploy.yml`.
 
-The included workflow builds the app from the repository root and sets the correct path automatically for a normal repository URL, such as `https://YOUR-NAME.github.io/workflow-organiser/`. You usually do not need to change the base path. If you use a custom domain or a repository named `YOUR-NAME.github.io`, open `.github/workflows/deploy.yml` in VS Code and change the `VITE_BASE_PATH` value to `/` before pushing.
+### How the website address is chosen
 
-## 7. Install it on your phone
+For the current project repository, the website address is usually:
 
-Open the published HTTPS website from step 6:
+```text
+https://jakedekock28-crypto.github.io/Workflow-app/
+```
 
-- **iPhone:** open it in Safari, tap **Share**, then **Add to Home Screen**.
-- **Android:** open it in Chrome, tap the menu, then **Install app** or **Add to Home screen**.
+The workflow sets the Vite base path from the repository name automatically. You do not need to change it for this address. If you use a custom domain or rename the repository to `jakedekock28-crypto.github.io`, edit the `VITE_BASE_PATH` line in `.github/workflows/deploy.yml` to `/` before pushing.
 
-Open the installed app once while online. The app files are then available offline. Your saved plans stay in that browser on that device; they do not sync to other devices. Use **Settings → Back up now** to download a backup before changing phones or clearing browser data.
+### Step 3: Publish later changes
 
-## 8. Save and publish future changes
-
-After editing files in VS Code, run these commands in the terminal from the `workflow` folder:
+After you edit files in VS Code, run these commands from the `workflow` folder:
 
 ```sh
 npm run build
@@ -107,22 +120,50 @@ git commit -m "Describe your change"
 git push
 ```
 
-The build checks the project. The push sends your changes to GitHub, and GitHub Actions updates the Pages website automatically.
+The build checks and creates the production app. The push uploads your change, then GitHub Actions builds and republishes the website. To check progress, open **GitHub → your repository → Actions**.
 
-## Useful commands
+## Part 4: Install the published app on your phone
 
-| What you want to do | Command |
+First open the published HTTPS website from Part 3 and let it finish loading once.
+
+- **iPhone/iPad:** open the site in Safari, tap **Share**, then **Add to Home Screen**.
+- **Android:** open the site in Chrome, open the browser menu, then tap **Install app** or **Add to Home screen**.
+
+Open the installed app once while online. The app shell can then open offline. Google sync, web links and phone sharing still need an internet connection or the relevant phone app.
+
+## Google integrations
+
+Google sign-in, Calendar sync, Drive attachments and Drive cloud backup are **not implemented in the current app**. Google Cloud setup and GitHub variables alone will not add these features. When the integration code is ready, use the separate [Google integrations: manual setup guide](GOOGLE-SETUP.md) for the account setup you need to complete yourself.
+
+## Troubleshooting
+
+| What you see | What to check |
 | --- | --- |
-| Install packages | `npm install` |
-| Run on your computer | `npm run dev` |
-| Run so your phone can connect on Wi-Fi | `npm run dev -- --host` |
-| Check a production build | `npm run build` |
-| Preview the production build | `npm run preview` |
+| `npm` or `node` is not found | Install Node.js LTS, fully quit and reopen VS Code, then try `node -v` and `npm -v` again. |
+| `npm run dev` says the port is busy | Stop the other Vite server with Control+C, or open the new port Vite prints. |
+| Git says `origin` already exists | You have already connected this folder to a remote. Check it with `git remote -v`; do not add another `origin`. |
+| GitHub Pages has no site or shows an old build | Check **Actions** for a green deployment run, then check **Settings → Pages → Source** is **GitHub Actions**. |
+| The Pages site is blank | Check that `VITE_BASE_PATH` matches the site URL and that the latest Actions run succeeded. A normal repository URL uses `/<repository-name>/`; a user site or custom domain at the root uses `/`. |
 
-## Data and reminders
+## Data, privacy and reminders
 
-Workflow saves data in your browser’s local storage. Clearing the browser’s site data can erase it, so keep a backup. The Today screen and Delegated tab show your reminders when you open the app. This project has no server, so it cannot reliably send background push notifications to iPhones.
+Without Google connected, app data is held in browser local storage on this device. It does not sync to another browser or phone. Clearing browser site data can erase it, so download a JSON backup from **Settings → Back up now** first.
+
+Google sync is not available in this version. When added, Calendar and Drive data will be sent directly between your browser and your own Google account using permissions you approve; the app has no Workflow server. Review event notes and task details before syncing them to a calendar.
+
+The Today and Delegated screens are the dependable reminders when you open the app. A static site without a backend cannot reliably send background push notifications to iPhones.
+
+## Build and verification
+
+From the `workflow` folder:
+
+```sh
+npm run build
+npm run preview
+```
+
+The build runs strict TypeScript checking and creates the production bundle, PWA manifest and service worker. Preview the built app at the local address Vite prints. Real phone installation and offline behaviour must be checked on the deployed HTTPS site; a local production build cannot confirm phone browser behaviour.
 
 ## Licence
 
-This project is available under the MIT licence. See [LICENSE](LICENSE).
+MIT. See [LICENSE](LICENSE).
