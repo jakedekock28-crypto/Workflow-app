@@ -167,3 +167,45 @@ The build runs strict TypeScript checking and creates the production bundle, PWA
 ## Licence
 
 MIT. See [LICENSE](LICENSE).
+
+## Delegated tasks: this phase and your part
+
+Delegated tasks work with the app's local browser storage. There is no login, online contact database, email service, SMS service, or automatic reminder worker in this release. Your people, task assignments, templates, and message history stay in this browser and should be included in your regular JSON backups.
+
+### Set up your contacts
+
+1. Open **Delegated** in the bottom navigation.
+2. Choose **Add person** and enter their name, email, and/or Australian mobile number. Local mobile input such as `0412 345 678` is saved in `+61412345678` format.
+3. Confirm SMS consent only when the person has agreed to receive SMS. The app does not offer an SMS draft when consent is off.
+4. Use **Manage people** to edit contact details, deactivate or reactivate a person, or delete them. Deleting also removes that person from groups and existing task assignments.
+5. Choose **New group** to create a group. Enter the contact numbers shown in the prompt, separated by commas (for example `1,3`). Groups are shortcuts to roster members.
+
+Older delegated tasks that only had a typed name are migrated into saved contacts. Those contacts are marked **Check migrated contact** because the old app did not have verified email, mobile, or consent details. Review these before making contact.
+
+### Create and message a delegated task
+
+1. Use the **+** button and choose **Delegate**.
+2. Enter the title, date and time, description, requirements, priority, and optional event.
+3. Select one or more active people. The picker shows group headings and their members; select the individual members listed under the group. On a computer, hold **Command** (Mac) or **Ctrl** (Windows) to select multiple options.
+4. Set the task's reminder preferences. In this phase they are saved with the task for planning; they do not send automatically.
+5. Open the task in **Delegated**. **Preview** shows the prepared email and SMS text with placeholders filled in. Update the template from **Message templates**.
+6. Choose **Email** or **SMS** to open a draft in the device's mail or messaging app. Check the recipient and message, then send it there. Workflow does not send it itself.
+7. Return to Workflow and choose **I sent it** only after you sent the message. This records a local, user-confirmed history entry. It does not prove delivery. Do not log the message if you cancelled or did not send it.
+
+Messages are prepared one recipient at a time. Bulk sending, automated scheduling, provider delivery logs, retries, and resend queues are not part of this phase. Email templates and message history can contain personal task details, so protect your device and backups.
+
+### Checks for this phase
+
+Run these from the `workflow` folder:
+
+```sh
+npm install
+npm test
+npm run build
+```
+
+`npm test` covers legacy data migration, Australian phone formatting, template rendering, and reminder schedule calculations. These checks do not send messages or connect to a provider.
+
+### Later integration work
+
+The next approved stage is the hosted notification service (Cloudflare Worker, D1, scheduled Cron Trigger, and Resend for email). It is not included here. Do not add provider keys to this frontend or GitHub Pages settings. A later backend stage needs separate deployment and secret setup instructions; SMS automation is excluded from the approved design.
