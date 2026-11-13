@@ -206,7 +206,7 @@ From the project root:
 
 ```sh
 npm run worker:db:migrate:local
-npm run worker:dev -- --var APP_URL:http://localhost:5173/
+npm --prefix worker run dev -- --var APP_URL:http://localhost:5173/
 ```
 
 In a second terminal, also from the project root:
