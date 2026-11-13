@@ -267,6 +267,16 @@ npm run build
 
 `npm test` runs frontend migration/notification/cloud-client tests and Worker permissions/data-isolation tests. `npm run build` runs TypeScript checks for both app and Worker, then creates the production PWA files in `dist/`. To preview that production build locally, run `npm run preview`.
 
+### Regenerate the brand icons
+
+`public/logo.svg` is the editable source for the Workflow pennant. After changing it, run this from the `workflow` folder:
+
+```sh
+npm run generate:brand-icons
+```
+
+The local Sharp script creates the favicon, Apple touch icon, 192px and 512px PWA icons, and a 512px maskable PWA icon. The maskable output draws the background edge-to-edge and scales the foreground artwork to 80% for safe-zone padding. Icon generation runs locally; it does not upload the logo to a service. Commit the regenerated PNGs with `public/logo.svg`.
+
 ## License
 
 MIT. See [LICENSE](LICENSE).

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useStore } from '../../store/useStore';
 import type { AppData } from '../../types';
+import BrandLockup from '../../components/BrandLockup';
 import { applyCloudData, cloudApiBase, cloudRequest, clearCloudCache, clearCloudSession, collectionPath, collectionStateKey, exportWorkspaceData, mergePendingCloudData, readCloudBaseline, readCloudSession, readPendingCloudSync, readWorkspaceId, saveCloudBaseline, savePendingCloudSync, saveCloudSession, saveWorkspaceId, type CloudSession, type CloudWorkspace, type SyncCollection, type WorkspaceData } from '../../lib/cloud/client';
 
 declare global {
@@ -292,7 +293,7 @@ export default function CloudAccountPanel({ visible, onWorkspaceRole }: { visibl
 
   if (!portalTarget) return null;
   return createPortal(<section className="settings-section cloud-account"><div className="section-title"><div><span className="eyebrow">OPTIONAL ACCOUNT</span><h2>Workspaces</h2></div></div>
-    {!cloudApiBase ? <p className="settings-copy">Workspace sync is unavailable until the Worker URL and Google sign-in client ID are configured. Local mode and local backups continue to work.</p> : !token ? <div><p className="settings-copy">Sign in with Google to create a workspace or join one with an invite link. Google sign-in uses your name, email, and Google account identifier only.</p><div id="google-sign-in-button"/><small className="muted">Use the same Google account that received your invite.</small></div> : <>
+    {!cloudApiBase ? <p className="settings-copy">Workspace sync is unavailable until the Worker URL and Google sign-in client ID are configured. Local mode and local backups continue to work.</p> : !token ? <div><div className="signin-brand"><BrandLockup /></div><p className="settings-copy">Sign in with Google to create a workspace or join one with an invite link. Google sign-in uses your name, email, and Google account identifier only.</p><div id="google-sign-in-button"/><small className="muted">Use the same Google account that received your invite.</small></div> : <>
       <p className="settings-copy">Signed in as <b>{email}</b>. Workspace records are shared with active members according to their role.</p>
       <div className="form-grid"><label className="field-label">Current workspace<select value={workspaceId ?? ''} onChange={e=>{const id=e.target.value;const chosen=workspaces.find(item=>item.id===id);if(!token||!chosen)return;void loadWorkspace(id,token,workspaces).then(()=>refreshManagement(token,id,chosen.role)).catch(reason=>setError(reason.message));}}>{workspaces.map(item=><option key={item.id} value={item.id}>{item.name} · {roleLabel(item.role)}</option>)}</select></label></div>
       <form className="inline-add" onSubmit={createWorkspace}><input required maxLength={100} placeholder="New workspace name" value={newWorkspaceName} onChange={event=>setNewWorkspaceName(event.target.value)}/><button className="primary-button">Create workspace</button></form>

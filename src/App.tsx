@@ -9,6 +9,7 @@ import { createMessageValues, defaultMessageTemplate, renderMessage } from './li
 import { calculateReminderSchedule } from './lib/notifications/schedule';
 import type { Person, Group } from './types';
 import CloudAccountPanel from './features/cloud/CloudAccountPanel';
+import BrandLockup from './components/BrandLockup';
 
 type Tab = 'Today' | 'Calendar' | 'Areas' | 'Delegated';
 const uid = () => crypto.randomUUID();
@@ -22,6 +23,13 @@ const deliveredAlertsKey = 'workflow-browser-alerts-delivered';
 export default function App() {
   const store = useStore();
   useEffect(() => { store.pruneNotificationLogs(); }, []);
+  useEffect(() => {
+    const splash = document.getElementById('boot-splash');
+    if (!splash) return;
+    splash.classList.add('boot-splash--leaving');
+    const timer = window.setTimeout(() => splash.remove(), 220);
+    return () => window.clearTimeout(timer);
+  }, []);
   const [tab, setTab] = useState<Tab>('Today');
   const [sheet, setSheet] = useState<'event' | 'task' | 'delegated' | 'area' | 'template' | null>(null);
   const [detail, setDetail] = useState<Event | null>(null);
@@ -85,7 +93,7 @@ export default function App() {
   function exportCalendar() { const items = [...store.events.map(e => ({ title: e.title, date: e.date, description: e.notes, area: area(e.areaId)?.name ?? 'Workflow' })), ...store.tasks.filter(t => t.dueDate).map(t => ({ title: t.title, date: t.dueDate, description: t.notes, area: area(t.areaId)?.name ?? 'Workflow' }))]; const text = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Workflow//Personal Organiser//EN', ...items.flatMap(item => ['BEGIN:VEVENT', `UID:${uid()}@workflow`, `DTSTART;VALUE=DATE:${item.date.replaceAll('-', '')}`, `SUMMARY:${item.title.replaceAll(',', '\\,')}`, `DESCRIPTION:${item.description.replaceAll(',', '\\,')}`, `CATEGORIES:${item.area}`, 'END:VEVENT']), 'END:VCALENDAR'].join('\r\n'); const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([text], { type: 'text/calendar' })); link.download = 'workflow-calendar.ics'; link.click(); URL.revokeObjectURL(link.href); }
 
   return <div className={`app ${theme}`}>
-    <header className="topbar"><a className="brand" onClick={() => { setTab('Today'); setDetail(null); setSettingsOpen(false); }}><span className="brand-mark">w.</span><span>workflow</span></a><div className="top-actions"><button className="icon-button" aria-label="Toggle light or dark theme" onClick={() => setThemeOverride(theme === 'dark' ? 'light' : 'dark')}>{theme === 'dark' ? <Sun /> : <Moon />}</button><button className="icon-button" aria-label="Settings" onClick={() => { setSettingsOpen(true); setDetail(null); }}><Settings size={18}/></button></div></header>
+    <header className="topbar"><a className="brand" onClick={() => { setTab('Today'); setDetail(null); setSettingsOpen(false); }}><BrandLockup /></a><div className="top-actions"><button className="icon-button" aria-label="Toggle light or dark theme" onClick={() => setThemeOverride(theme === 'dark' ? 'light' : 'dark')}>{theme === 'dark' ? <Sun /> : <Moon />}</button><button className="icon-button" aria-label="Settings" onClick={() => { setSettingsOpen(true); setDetail(null); }}><Settings size={18}/></button></div></header>
     <main className="main">
       {settingsOpen ? <SettingsPage areas={store.areas} sections={store.sections} templates={store.templates} theme={store.theme} lastBackup={store.lastBackup} onBack={()=>setSettingsOpen(false)} onTheme={store.setTheme} onRenameArea={store.renameArea} onDeleteArea={store.deleteArea} onAddSection={store.addSection} onRenameSection={store.renameSection} onDeleteSection={store.deleteSection} onDeleteTemplate={store.deleteTemplate} onNewTemplate={()=>setSheet('template')} onBackup={backup} onRestore={restore} onClearSamples={()=>{if(confirm('Remove the generic sample events and tasks?'))store.clearSamples();}} onClearAll={()=>{if(confirm('Clear all Workflow data on this device? This cannot be undone.')){store.clearAll();setSettingsOpen(false);}}} /> : detail ? <EventDetail event={detail} tasks={store.tasks.filter(t => t.eventId === detail.id)} area={area(detail.areaId)} sections={store.sections} templates={store.templates} onUpdate={store.updateEvent} onBack={() => setDetail(null)} onToggle={store.toggleTask} onAdd={(title, due) => createTask(title, due, detail.areaId, 'mine', [], detail.id, 'medium')} onApply={template => template.tasks.forEach(title => createTask(title, eventDate(detail), detail.areaId, 'mine', [], detail.id, 'medium'))} onDelete={() => { store.deleteEvent(detail.id); setDetail(null); }} onDuplicate={() => { store.addEvent({ ...detail, id: uid(), title: `${detail.title} (copy)`, date: format(addDays(parseISO(`${eventDate(detail)}T12:00:00`), 7), 'yyyy-MM-dd'), pinned: false }); setDetail(null); }} /> : <>
         {tab === 'Today' && <TodayPage events={upcoming} tasks={store.tasks} due={todayTasks} overdue={overdue} nextTasks={nextTasks} nextEvent={nextEvent} area={area} onOpen={setDetail} onPin={store.updateEvent} onQuick={() => setSheet('task')} canCreateTasks={canCreateTasks} backup={store.lastBackup} onBackup={backup} browserAlerts={browserAlerts} onEnableBrowserAlerts={enableBrowserAlerts} />}
