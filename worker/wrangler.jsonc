@@ -7,14 +7,13 @@
   "triggers": { "crons": ["0 2 * * *"] },
   "vars": {
     "APP_URL": "https://jakedekock28-crypto.github.io/Workflow-app/",
-    "GOOGLE_CLIENT_ID": "SET_IN_GOOGLE_CLOUD_CONSOLE"
+    "GOOGLE_CLIENT_ID": "361629200529-9e711oo1cscm9kf56ft4le4dgr6lm434.apps.googleusercontent.com"
   },
   "d1_databases": [
     {
       "binding": "DB",
       "database_name": "workflow-production",
-      "database_id": "00000000-0000-0000-0000-000000000001",
-      "migrations_dir": "migrations"
+      "database_id": "48307422-fb07-420d-885b-b9ff76a99191"
     }
   ]
 }

@@ -109,14 +109,24 @@ app.use('*', async (c, next) => {
   const allowedOrigin = new URL(c.env.APP_URL).origin;
   const origin = c.req.header('Origin');
   if (origin && origin !== allowedOrigin) return json({ error: 'Origin not allowed.' }, 403);
-  if (origin) {
-    c.header('Access-Control-Allow-Origin', allowedOrigin);
-    c.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
-    c.header('Access-Control-Allow-Headers', 'Authorization, Content-Type, X-Workspace-Id');
-    c.header('Vary', 'Origin');
+  if (origin && c.req.method === 'OPTIONS') {
+    return c.body(null, 204, {
+      'Access-Control-Allow-Origin': allowedOrigin,
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'Authorization, Content-Type, X-Workspace-Id',
+      Vary: 'Origin',
+    });
   }
-  if (c.req.method === 'OPTIONS') return c.body(null, 204);
   await next();
+  if (origin) {
+    const response = c.res;
+    const headers = new Headers(response.headers);
+    headers.set('Access-Control-Allow-Origin', allowedOrigin);
+    headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+    headers.set('Access-Control-Allow-Headers', 'Authorization, Content-Type, X-Workspace-Id');
+    headers.set('Vary', 'Origin');
+    c.res = new Response(response.body, { status: response.status, statusText: response.statusText, headers });
+  }
 });
 
 app.get('/health', c => json({ status: 'ok' }));

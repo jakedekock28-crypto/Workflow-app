@@ -6,3 +6,7 @@ dist
 # Local Worker credentials and secrets
 .dev.vars
 worker/.dev.vars
+
+# Personal exports and downloaded OAuth credentials must never be committed
+workflow-backup-*.json
+client_secret_*.json
