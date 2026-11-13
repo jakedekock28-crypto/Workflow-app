@@ -7,6 +7,8 @@ This guide is split into two jobs:
 1. **Use the app:** run it, back up your data, and publish/install it.
 2. **Set up cloud workspaces:** complete the one-time Google, Cloudflare, and GitHub setup yourself.
 
+For a simple guide to using the finished app and sharing a workspace, see [HOW-TO-USE.md](HOW-TO-USE.md).
+
 Cloud setup is optional. Local mode works without accounts or provider keys. No part of this project is allowed to switch to a paid plan automatically.
 
 ## Before you start: what the app does
