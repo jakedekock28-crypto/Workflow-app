@@ -29,15 +29,29 @@ The app starts with sample content. Remove it in **Settings → Clear sample dat
 ### A. Run it on your computer
 
 1. Install the current Node.js LTS release from [nodejs.org](https://nodejs.org/).
-2. Open this repository’s `workflow` folder in VS Code. It is the folder containing `package.json`.
-3. Choose **Terminal → New Terminal**, then run:
+2. Open this repository’s `workflow` folder in VS Code. In this checkout, it is inside `AI apps` and contains `package.json`.
+3. Choose **Terminal → New Terminal**. If the terminal prompt ends with `work-experience-task %` (as in your error), move into the app folder first:
+
+   ```sh
+   cd "AI apps/workflow"
+   ```
+
+   Check that you are in the right folder:
+
+   ```sh
+   ls package.json
+   ```
+
+   It should print `package.json`. If it says “No such file or directory”, stop and open the `workflow` folder in VS Code before continuing.
+
+4. Run the app from that folder:
 
    ```sh
    npm install
    npm run dev
    ```
 
-4. Open the `http://localhost:...` address Vite prints. Leave the terminal running. Press **Control+C** to stop it.
+5. Open the `http://localhost:...` address Vite prints. Leave the terminal running. Press **Control+C** to stop it.
 
 To test on a phone on the same Wi-Fi, stop the server and run `npm run dev -- --host`. Open the **Network** address Vite prints on the phone. This is only a preview; use the published HTTPS site for a lasting install.
 
