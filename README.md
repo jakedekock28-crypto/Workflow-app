@@ -22,7 +22,7 @@ Cloud setup is optional. Local mode works without accounts or provider keys. No 
 - The Today screen is the in-app **My tasks & reminders** centre. Optional browser alerts can notify about configured task reminder times while Workflow is open and permission is granted.
 - No SMS, mobile-number fields, invitation emails, automatic reminder emails, or paid email provider.
 
-The app starts with sample content. Remove it in **Settings → Clear sample data** before entering real information.
+New installs start empty. An existing browser may still have demo records from an earlier version; **Settings → Clear sample data** removes the built-in examples while keeping user-created records. If demo tasks were already imported into a cloud workspace, open Workflow while signed in as an Owner and use **Clear sample data** once to remove those demo records from that workspace too.
 
 > **Privacy warning:** Do not enter details about children or minors, sensitive personal or health details, identity/service numbers, credentials, security plans, or sensitive operational information. The app has no third-party analytics, trackers, or ads. Read [PRIVACY-NOTICE-TEMPLATE.md](PRIVACY-NOTICE-TEMPLATE.md) and [TERMS-TEMPLATE.md](TERMS-TEMPLATE.md); both are templates, not legal advice.
 

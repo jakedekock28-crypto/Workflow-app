@@ -1,28 +1,20 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { addDays, addMonths, format, formatISO } from 'date-fns';
+import { addDays, addMonths, format } from 'date-fns';
 import type { AppData, Area, Event, Group, MessageTemplate, NotificationLogEntry, Person, Section, Task, TaskTemplate } from '../types';
 import { defaultMessageTemplate } from '../lib/notifications/templates';
-import { migrateAppDataV1 } from '../lib/data/migrate';
-
-const day = (offset: number) => formatISO(addDays(new Date(), offset), { representation: 'date' });
-const samplePerson: Person = { id: 'sample-alex', fullName: 'Alex', isActive: true };
+import { migrateAppDataV1, removeSampleContent } from '../lib/data/migrate';
 
 const seed: AppData = {
   version: 3,
   theme: 'light',
-  sampleData: true,
-  areas: [{ id: 'cadets', name: 'Cadets', color: '#3c8b70', icon: '✳' }, { id: 'school', name: 'School', color: '#5982c0', icon: '⌁' }, { id: 'personal', name: 'Personal', color: '#9b75ba', icon: '◌' }],
-  sections: [{ id: 'biv1', areaId: 'cadets', name: 'Biv 1 · Engineering Bridge' }, { id: 'biv2', areaId: 'cadets', name: 'Biv 2 · Sector Veer' }, { id: 'biv3', areaId: 'cadets', name: 'Biv 3' }, { id: 'biv4', areaId: 'cadets', name: 'Biv 4 · Sector A' }, { id: 'nco', areaId: 'cadets', name: 'NCO WKND 2 · Castle Mountain' }, { id: 'maths', areaId: 'school', name: 'Maths Advanced' }, { id: 'english', areaId: 'school', name: 'English' }, { id: 'science', areaId: 'school', name: 'Science' }],
-  events: [{ id: 'ev-biv', title: 'Biv 1 · Engineering Bridge', date: day(3), areaId: 'cadets', sectionId: 'biv1', location: 'Training area', notes: 'Weekend field exercise with the team.', status: 'upcoming', pinned: true }, { id: 'ev-maths', title: 'Functions assessment', date: day(5), areaId: 'school', sectionId: 'maths', location: 'Room 12', notes: '', status: 'upcoming' }, { id: 'ev-hike', title: 'Sunday trail walk', date: day(9), areaId: 'personal', location: 'Riverside track', notes: '', status: 'upcoming' }],
-  tasks: [
-    { id: 't1', title: 'Confirm the staff plan', description: '', dueDate: day(0), status: 'todo', priority: 'high', notes: '', eventId: 'ev-biv', areaId: 'cadets', sectionId: 'biv1', kind: 'mine', requirements: [], subtasks: [], assigneeIds: [], reminderSettings: { sendOnAssignment: false, onDueDate: false }, assignedBy: 'Workflow user', assignedAt: new Date().toISOString(), remindedCount: 0 },
-    { id: 't2', title: 'Finish practice questions', description: '', dueDate: day(1), status: 'doing', priority: 'medium', notes: '', areaId: 'school', sectionId: 'maths', kind: 'mine', requirements: [], subtasks: [], assigneeIds: [], reminderSettings: { sendOnAssignment: false, onDueDate: false }, assignedBy: 'Workflow user', assignedAt: new Date().toISOString(), remindedCount: 0 },
-    { id: 't3', title: 'Pack first aid kit', description: '', dueDate: day(2), status: 'todo', priority: 'medium', notes: '', eventId: 'ev-biv', areaId: 'cadets', sectionId: 'biv1', kind: 'mine', requirements: [], subtasks: [], assigneeIds: [], reminderSettings: { sendOnAssignment: false, onDueDate: false }, assignedBy: 'Workflow user', assignedAt: new Date().toISOString(), remindedCount: 0 },
-    { id: 't4', title: 'Share the route plan', description: 'Share the agreed route with the team.', dueDate: day(1), status: 'todo', priority: 'high', notes: '', eventId: 'ev-biv', areaId: 'cadets', sectionId: 'biv1', kind: 'delegated', requirements: [{ id: 'req1', title: 'Include the meeting point', done: false }], subtasks: [], assigneeIds: [samplePerson.id], reminderSettings: { sendOnAssignment: false, beforeDue: { amount: 1, unit: 'days' }, onDueDate: true }, assignedBy: 'Workflow user', assignedAt: new Date().toISOString(), remindedCount: 0 },
-  ],
-  templates: [{ id: 'biv-checklist', name: 'Biv checklist', tasks: ['Write activity appreciation', 'Confirm staff', 'Brief recruits', 'Check equipment', 'First aid check', 'Remind command team'] }],
-  people: [samplePerson],
+  sampleData: false,
+  areas: [],
+  sections: [],
+  events: [],
+  tasks: [],
+  templates: [],
+  people: [],
   groups: [],
   messageTemplates: [defaultMessageTemplate],
   notificationLogs: [],
@@ -106,11 +98,11 @@ export const useStore = create<Store>()(persist((set) => ({
   setTheme: theme => set({ theme }),
   setBackup: () => set({ lastBackup: new Date().toISOString() }),
   importData: data => set(migrateAppDataV1(data, seed)),
-  clearSamples: () => set(s => ({ events: s.events.filter(event => !event.id.startsWith('ev-')), tasks: s.tasks.filter(task => !['t1', 't2', 't3', 't4'].includes(task.id)), people: s.people.filter(person => person.id !== samplePerson.id), sampleData: false })),
+  clearSamples: () => set(s => removeSampleContent(s)),
   clearAll: () => set({ ...seed, events: [], tasks: [], people: [], groups: [], notificationLogs: [], sampleData: false }),
 }), {
   name: 'workflow-data',
-  version: 4,
+  version: 5,
   storage: createJSONStorage(() => localStorage),
-  migrate: (persisted) => migrateAppDataV1(persisted, seed),
+  migrate: (persisted) => removeSampleContent(migrateAppDataV1(persisted, seed)),
 }));

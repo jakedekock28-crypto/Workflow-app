@@ -6,7 +6,7 @@ Workflow is a personal organiser that can also share selected task information w
 
 Open the app at <https://jakedekock28-crypto.github.io/Workflow-app/>. You can use it in a browser, or install it on a phone from the browser's **Add to Home Screen** or **Install app** option.
 
-The app may start with example information. Before entering your own information, open **Settings → Clear sample data**. Do not use **Clear all data** unless you intend to remove this browser's saved Workflow information.
+New installs start with no example areas, events, tasks, people, or checklist templates. Existing browsers are cleaned of the built-in demo records when they update. If those demos were already imported into a cloud workspace, an Owner can open **Settings → Clear sample data** once while signed in to remove the demo tasks, contacts, groups, and templates from that workspace. This keeps other user-created records. Do not use **Clear all data** unless you intend to remove the browser's saved organiser information and synced records.
 
 ## The four main screens
 

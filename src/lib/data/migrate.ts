@@ -6,6 +6,43 @@ export const defaultReminderSettings: TaskReminderSettings = {
   onDueDate: false,
 };
 
+const sampleAreas = new Map([['cadets', 'Cadets'], ['school', 'School'], ['personal', 'Personal']]);
+const sampleSections = new Map([
+  ['biv1', 'Biv 1 · Engineering Bridge'], ['biv2', 'Biv 2 · Sector Veer'], ['biv3', 'Biv 3'],
+  ['biv4', 'Biv 4 · Sector A'], ['nco', 'NCO WKND 2 · Castle Mountain'],
+  ['maths', 'Maths Advanced'], ['english', 'English'], ['science', 'Science'],
+]);
+const sampleEvents = new Map([
+  ['ev-biv', 'Biv 1 · Engineering Bridge'], ['ev-maths', 'Functions assessment'], ['ev-hike', 'Sunday trail walk'],
+]);
+const sampleTasks = new Map([
+  ['t1', 'Confirm the staff plan'], ['t2', 'Finish practice questions'],
+  ['t3', 'Pack first aid kit'], ['t4', 'Share the route plan'],
+]);
+const sampleChecklist = ['Write activity appreciation', 'Confirm staff', 'Brief recruits', 'Check equipment', 'First aid check', 'Remind command team'];
+
+/** Remove only the built-in demo records, keeping user-created and edited records. */
+export function removeSampleContent(data: AppData): AppData {
+  const events = data.events.filter(event => sampleEvents.get(event.id) !== event.title);
+  const tasks = data.tasks.filter(task => sampleTasks.get(task.id) !== task.title);
+  const usedSectionIds = new Set([
+    ...events.map(event => event.sectionId),
+    ...tasks.map(task => task.sectionId),
+  ].filter((id): id is string => Boolean(id)));
+  const sections = data.sections.filter(section => sampleSections.get(section.id) !== section.name || usedSectionIds.has(section.id));
+  const usedAreaIds = new Set([
+    ...events.map(event => event.areaId),
+    ...tasks.map(task => task.areaId),
+    ...sections.map(section => section.areaId),
+  ]);
+  const areas = data.areas.filter(area => sampleAreas.get(area.id) !== area.name || usedAreaIds.has(area.id));
+  const usedPersonIds = new Set([...tasks.flatMap(task => task.assigneeIds), ...data.groups.flatMap(group => group.personIds)]);
+  const people = data.people.filter(person => person.id !== 'sample-alex' || person.fullName !== 'Alex' || usedPersonIds.has(person.id));
+  const templates = data.templates.filter(template => template.id !== 'biv-checklist' || template.name !== 'Biv checklist' || JSON.stringify(template.tasks) !== JSON.stringify(sampleChecklist));
+
+  return { ...data, areas, sections, events, tasks, people, templates, sampleData: false };
+}
+
 function legacyPersonId(name: string): string {
   const normalized = name.trim().toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '');
   const slug = normalized.replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'person';
