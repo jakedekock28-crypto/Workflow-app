@@ -2,10 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { mergePendingCloudData } from '../client';
 import type { AppData } from '../../../types';
 
-const base: AppData['people'][number] = { id: 'p1', fullName: 'Alex', preferredContact: 'email', notes: '', isActive: true, smsConsent: false };
+const base: AppData['people'][number] = { id: 'p1', fullName: 'Alex', email: 'alex@example.com', isActive: true };
 const updated = { ...base, fullName: 'Alex Lee' };
 const remoteOnly = { ...base, id: 'p2', fullName: 'Morgan' };
-const empty: Partial<AppData> = { people: [], groups: [], tasks: [], templates: [], messageTemplates: [], notificationLogs: [], areas: [], sections: [], events: [] };
+const empty = { version: 3 as const, people: [], groups: [], tasks: [], templates: [] };
 
 describe('offline cloud reconciliation', () => {
   it('replays local offline edits without dropping newer remote records', () => {

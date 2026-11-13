@@ -6,10 +6,10 @@ import { defaultMessageTemplate } from '../lib/notifications/templates';
 import { migrateAppDataV1 } from '../lib/data/migrate';
 
 const day = (offset: number) => formatISO(addDays(new Date(), offset), { representation: 'date' });
-const samplePerson: Person = { id: 'sample-alex', fullName: 'Alex', preferredContact: 'email', notes: 'Example contact — edit or remove.', isActive: true, smsConsent: false };
+const samplePerson: Person = { id: 'sample-alex', fullName: 'Alex', isActive: true };
 
 const seed: AppData = {
-  version: 2,
+  version: 3,
   theme: 'light',
   sampleData: true,
   areas: [{ id: 'cadets', name: 'Cadets', color: '#3c8b70', icon: '✳' }, { id: 'school', name: 'School', color: '#5982c0', icon: '⌁' }, { id: 'personal', name: 'Personal', color: '#9b75ba', icon: '◌' }],
@@ -26,6 +26,7 @@ const seed: AppData = {
   groups: [],
   messageTemplates: [defaultMessageTemplate],
   notificationLogs: [],
+  notificationLogRetentionDays: 90,
 };
 
 interface Store extends AppData {
@@ -54,6 +55,8 @@ interface Store extends AppData {
   updateMessageTemplate: (template: MessageTemplate) => void;
   deleteMessageTemplate: (id: string) => void;
   logManualNotification: (entry: NotificationLogEntry) => void;
+  setNotificationLogRetentionDays: (days: number) => void;
+  pruneNotificationLogs: () => void;
   setTheme: (theme: AppData['theme']) => void;
   setBackup: () => void;
   importData: (data: unknown) => void;
@@ -97,7 +100,9 @@ export const useStore = create<Store>()(persist((set) => ({
   addMessageTemplate: template => set(s => ({ messageTemplates: [...s.messageTemplates, template] })),
   updateMessageTemplate: template => set(s => ({ messageTemplates: s.messageTemplates.map(item => item.id === template.id ? template : item) })),
   deleteMessageTemplate: id => set(s => ({ messageTemplates: s.messageTemplates.filter(template => template.id !== id) })),
-  logManualNotification: entry => set(s => ({ notificationLogs: [entry, ...s.notificationLogs], tasks: s.tasks.map(task => task.id === entry.taskId ? { ...task, remindedCount: task.remindedCount + 1, lastReminded: entry.sentAt } : task) })),
+  logManualNotification: entry => set(s => { const cutoff = Date.now() - s.notificationLogRetentionDays * 86_400_000; return { notificationLogs: [entry, ...s.notificationLogs.filter(log => Date.parse(log.sentAt) >= cutoff)], tasks: s.tasks.map(task => task.id === entry.taskId ? { ...task, remindedCount: task.remindedCount + 1, lastReminded: entry.sentAt } : task) }; }),
+  setNotificationLogRetentionDays: days => set(s => { const cutoff = Date.now() - days * 86_400_000; return { notificationLogRetentionDays: days, notificationLogs: s.notificationLogs.filter(log => Date.parse(log.sentAt) >= cutoff) }; }),
+  pruneNotificationLogs: () => set(s => { const cutoff = Date.now() - s.notificationLogRetentionDays * 86_400_000; return { notificationLogs: s.notificationLogs.filter(log => Date.parse(log.sentAt) >= cutoff) }; }),
   setTheme: theme => set({ theme }),
   setBackup: () => set({ lastBackup: new Date().toISOString() }),
   importData: data => set(migrateAppDataV1(data, seed)),
@@ -105,7 +110,7 @@ export const useStore = create<Store>()(persist((set) => ({
   clearAll: () => set({ ...seed, events: [], tasks: [], people: [], groups: [], notificationLogs: [], sampleData: false }),
 }), {
   name: 'workflow-data',
-  version: 2,
+  version: 4,
   storage: createJSONStorage(() => localStorage),
   migrate: (persisted) => migrateAppDataV1(persisted, seed),
 }));

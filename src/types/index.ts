@@ -1,7 +1,6 @@
 export type TaskStatus = 'todo' | 'doing' | 'done';
 export type Priority = 'low' | 'medium' | 'high';
 export type Recurrence = 'daily' | 'weekly' | 'fortnightly' | 'monthly' | 'custom';
-export type ContactPreference = 'email' | 'sms' | 'both';
 export type ReminderUnit = 'hours' | 'days';
 
 export interface Area {
@@ -26,14 +25,10 @@ export interface ChecklistItem {
 export interface Person {
   id: string;
   fullName: string;
-  roleOrRank?: string;
+  role?: string;
   email?: string;
-  mobileNumber?: string;
-  preferredContact: ContactPreference;
-  notes: string;
+  linkedUserId?: string;
   isActive: boolean;
-  smsConsent: boolean;
-  needsReview?: boolean;
 }
 
 export interface Group {
@@ -74,7 +69,6 @@ export interface Task {
   recurrenceIntervalDays?: number;
   assigneeIds: string[];
   reminderSettings: TaskReminderSettings;
-  reminderChannel?: ContactPreference | 'preferred';
   assignedBy: string;
   assignedAt: string;
   askedDate?: string;
@@ -108,22 +102,19 @@ export interface MessageTemplate {
   name: string;
   emailSubject: string;
   emailBody: string;
-  smsBody: string;
 }
 
 export interface NotificationLogEntry {
   id: string;
   taskId: string;
   personId: string;
-  channel: 'email' | 'sms';
+  channel: 'email';
   sentAt: string;
-  status: 'sent' | 'failed';
-  messagePreview: string;
-  errorMessage?: string;
+  status: 'sent';
 }
 
 export interface AppData {
-  version: 2;
+  version: 3;
   areas: Area[];
   sections: Section[];
   events: Event[];
@@ -133,6 +124,7 @@ export interface AppData {
   groups: Group[];
   messageTemplates: MessageTemplate[];
   notificationLogs: NotificationLogEntry[];
+  notificationLogRetentionDays: number;
   theme: 'light' | 'dark' | 'auto';
   lastBackup?: string;
   sampleData: boolean;

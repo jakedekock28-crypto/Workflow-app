@@ -4,12 +4,10 @@
   "main": "src/index.ts",
   "compatibility_date": "2026-11-10",
   "workers_dev": true,
+  "triggers": { "crons": ["0 2 * * *"] },
   "vars": {
-    "APP_ENV": "production",
     "APP_URL": "https://jakedekock28-crypto.github.io/Workflow-app/",
-    "TURNSTILE_SITE_KEY": "SET_IN_CLOUDFLARE_DASHBOARD",
-    "RESEND_FROM": "Workflow <no-reply@example.com>",
-    "AUTH_DAILY_GLOBAL_LIMIT": "90"
+    "GOOGLE_CLIENT_ID": "SET_IN_GOOGLE_CLOUD_CONSOLE"
   },
   "d1_databases": [
     {

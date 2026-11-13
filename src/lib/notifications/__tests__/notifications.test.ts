@@ -1,17 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { formatAustralianPhone, isValidEmail } from '../phone';
+import { isValidEmail, mailtoEmailSender } from '../emailSender';
 import { createMessageValues, defaultMessageTemplate, renderMessage } from '../templates';
 import { calculateReminderSchedule } from '../schedule';
 import type { Task, Person } from '../../../types';
 
-const person: Person = { id: 'p1', fullName: 'Sam Lee', preferredContact: 'email', notes: '', isActive: true, smsConsent: false };
+const person: Person = { id: 'p1', fullName: 'Sam Lee', email: 'sam@example.com', isActive: true };
 const task: Task = { id: 't1', title: 'Check equipment', description: 'Inspect the radios', dueDate: '2027-03-10', dueTime: '10:00', status: 'todo', priority: 'high', notes: '', areaId: 'a1', kind: 'delegated', requirements: [{ id: 'r1', title: 'Charge batteries', done: false }], subtasks: [], assigneeIds: [person.id], reminderSettings: { sendOnAssignment: false, beforeDue: { amount: 1, unit: 'days' }, onDueDate: true }, assignedBy: 'Alex', assignedAt: '2027-01-01T00:00:00.000Z', remindedCount: 0 };
 
-describe('Australian contact formatting', () => {
-  it('normalises a local mobile to international format', () => expect(formatAustralianPhone('0412 345 678')).toBe('+61412345678'));
-  it('accepts an existing international number', () => expect(formatAustralianPhone('+61 412 345 678')).toBe('+61412345678'));
-  it('rejects invalid and non-Australian numbers', () => { expect(formatAustralianPhone('123')).toBeNull(); expect(formatAustralianPhone('+1 415 555 2671')).toBeNull(); });
+describe('email reminders', () => {
   it('validates email addresses', () => { expect(isValidEmail('person@example.com')).toBe(true); expect(isValidEmail('no-at-sign')).toBe(false); });
+  it('creates an encoded mailto draft without sending it', () => expect(mailtoEmailSender.createDraft({ to: 'sam@example.com', subject: 'Task: A & B', body: 'Hello there' })).toBe('mailto:sam%40example.com?subject=Task%3A%20A%20%26%20B&body=Hello%20there'));
 });
 
 describe('message templates', () => {
@@ -21,7 +19,7 @@ describe('message templates', () => {
     expect(message.emailBody).toContain('Hi Sam Lee');
     expect(message.emailBody).toContain('Charge batteries');
     expect(message.emailBody).toContain('Alex has assigned');
-    expect(message.smsBody).not.toContain('{TaskTitle}');
+    expect(message.emailBody).not.toContain('{TaskTitle}');
   });
 });
 

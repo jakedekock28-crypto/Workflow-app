@@ -27,11 +27,7 @@ export function migrateAppDataV1(input: unknown, defaults: AppData): AppData {
       peopleByName.set(key, {
         id: legacyPersonId(name),
         fullName: name,
-        preferredContact: 'email',
-        notes: '',
         isActive: true,
-        smsConsent: false,
-        needsReview: true,
       });
     }
   }
@@ -40,8 +36,10 @@ export function migrateAppDataV1(input: unknown, defaults: AppData): AppData {
     const task = raw as Partial<Task> & { assignee?: string; subtasks?: Task['subtasks'] };
     const legacyName = task.assignee?.trim();
     const person = legacyName ? peopleByName.get(legacyName.toLowerCase()) : undefined;
+    const cleanTask = { ...task } as Record<string, unknown>;
+    delete cleanTask.reminderChannel;
     return {
-      ...task,
+      ...cleanTask,
       description: task.description ?? task.notes ?? '',
       dueDate: task.dueDate ?? '',
       status: task.status ?? 'todo',
@@ -61,11 +59,16 @@ export function migrateAppDataV1(input: unknown, defaults: AppData): AppData {
   return {
     ...defaults,
     ...old,
-    version: 2,
+    version: 3,
     tasks: migratedTasks,
-    people: [...peopleByName.values()],
+    people: [...peopleByName.values()].map(raw => {
+      const clean = { ...raw } as Record<string, unknown>;
+      delete clean.mobileNumber; delete clean.preferredContact; delete clean.notes; delete clean.smsConsent; delete clean.needsReview; delete clean.roleOrRank;
+      return clean as unknown as Person;
+    }),
     groups: old.groups ?? [],
-    messageTemplates: old.messageTemplates?.length ? old.messageTemplates : [defaultMessageTemplate],
-    notificationLogs: old.notificationLogs ?? [],
+    messageTemplates: old.messageTemplates?.length ? old.messageTemplates.map(raw => { const clean = { ...raw } as Record<string, unknown>; delete clean.smsBody; return clean as unknown as AppData['messageTemplates'][number]; }) : [defaultMessageTemplate],
+    notificationLogs: (old.notificationLogs ?? []).filter(item => item.channel === 'email' && item.status === 'sent' && Date.parse(item.sentAt) >= Date.now() - (old.notificationLogRetentionDays ?? defaults.notificationLogRetentionDays) * 86_400_000).map(raw => { const clean = { ...raw } as Record<string, unknown>; delete clean.messagePreview; delete clean.errorMessage; return clean as unknown as AppData['notificationLogs'][number]; }),
+    notificationLogRetentionDays: Math.min(365, Math.max(30, old.notificationLogRetentionDays ?? defaults.notificationLogRetentionDays)),
   } as AppData;
 }

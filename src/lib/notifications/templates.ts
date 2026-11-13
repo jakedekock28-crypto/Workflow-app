@@ -13,7 +13,6 @@ export interface MessageValues {
 export interface RenderedMessage {
   emailSubject: string;
   emailBody: string;
-  smsBody: string;
 }
 
 export const defaultMessageTemplate: MessageTemplate = {
@@ -21,7 +20,6 @@ export const defaultMessageTemplate: MessageTemplate = {
   name: 'Task reminder',
   emailSubject: 'Task: {TaskTitle}',
   emailBody: 'Hi {PersonName},\n\n{AssignedBy} has assigned you a task.\n\nTask: {TaskTitle}\nDetails: {TaskDescription}\nRequirements: {Requirements}\nDue: {DueDate}\nPriority: {Priority}\n\nPlease reply if you have any questions.',
-  smsBody: 'Hi {PersonName}, {TaskTitle} is due {DueDate}. Priority: {Priority}. {Requirements}',
 };
 
 export function createMessageValues(task: Task, person: Person, assignedBy = 'Workflow user'): MessageValues {
@@ -46,6 +44,5 @@ export function renderMessage(template: MessageTemplate, values: MessageValues):
   return {
     emailSubject: renderTemplate(template.emailSubject, values),
     emailBody: renderTemplate(template.emailBody, values),
-    smsBody: renderTemplate(template.smsBody, values).replace(/\s+/g, ' ').trim(),
   };
 }

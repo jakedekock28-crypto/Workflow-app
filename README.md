@@ -1,385 +1,246 @@
 # Workflow
 
-Workflow is a personal organiser for events, tasks and reminders. It works in a web browser and can be installed on a phone. Your information is saved in that browser on that device.
+Workflow is a personal organiser PWA for events, checklists, and delegated tasks. It can run entirely in one browser, or optionally sync workspaces through a Cloudflare Worker and D1 database.
 
-## What works today
+This guide is split into two jobs:
 
-- Today dashboard, month calendar, agenda and week planner.
-- Colour-coded areas and sections, events, task checklists and Biv planning prompts.
-- Delegated tasks, task templates, recurring tasks, subtasks and search filters.
-- Light and dark themes, local JSON backup and restore, and `.ics` calendar export.
-- An installable PWA with an offline app shell.
+1. **Use the app:** run it, back up your data, and publish/install it.
+2. **Set up cloud workspaces:** complete the one-time Google, Cloudflare, and GitHub setup yourself.
 
-The app works locally in your browser and can optionally sync to a private account through the Phase 2 Cloudflare service described below. It starts with generic sample content that you can remove in **Settings → Clear sample data**. Cloud sync is not active on the published site until you complete the one-time provider setup steps in Part 5.
+Cloud setup is optional. Local mode works without accounts or provider keys. No part of this project is allowed to switch to a paid plan automatically.
 
-> **Privacy note:** GitHub Pages is a public website, including when the repository itself is private. Do not put real names, plans, contact details, credentials or private sample data in source files. Local mode stores data in this browser. Cloud mode stores your account data in a private D1 database and sends sign-in links through Resend. Provider secrets belong in Cloudflare, never in the frontend or GitHub variables.
+## Before you start: what the app does
 
-### Google integration status
+- Today dashboard, agenda, calendar and week planner.
+- Events, tasks, checklists, delegated tasks, groups and templates.
+- Local JSON backup/restore and calendar export.
+- Installable PWA with an offline app shell.
+- Optional Google sign-in and private cloud workspaces after you complete Part 2.
+- Email reminders are **not sent by a server**. “Send reminder” opens a prefilled email draft. You send it yourself and confirm in Workflow if you want a local history entry.
+- The Today screen is the in-app **My tasks & reminders** centre. Optional browser alerts can notify about configured task reminder times while Workflow is open and permission is granted.
+- No SMS, mobile-number fields, invitation emails, automatic reminder emails, or paid email provider.
 
-Google sign-in, Calendar sync, Drive attachments and Drive cloud backup are **not implemented in this version**. There is a separate [Google integration guide](GOOGLE-SETUP.md) for the Google Cloud and GitHub steps you will need to do yourself after the integration code is added. Setting up Google Cloud alone will not add Google buttons or sync to the current app.
+The app starts with sample content. Remove it in **Settings → Clear sample data** before entering real information.
 
-## Part 1: Run the app on your computer
+> **Privacy warning:** Do not enter details about children or minors, sensitive personal or health details, identity/service numbers, credentials, security plans, or sensitive operational information. The app has no third-party analytics, trackers, or ads. Read [PRIVACY-NOTICE-TEMPLATE.md](PRIVACY-NOTICE-TEMPLATE.md) and [TERMS-TEMPLATE.md](TERMS-TEMPLATE.md); both are templates, not legal advice.
 
-### Step 1: Open the right folder
+## Part 1 — Use the app
 
-1. Open **VS Code**.
-2. Choose **File → Open Folder…**.
-3. Select this repository's `workflow` folder. It is the folder containing `package.json`, `src`, and `.github`.
-4. Choose **Terminal → New Terminal**. Commands below must be run from this `workflow` folder.
+### A. Run it on your computer
 
-### Step 2: Install Node.js
-
-Workflow needs Node.js and npm. If `node -v` or `npm -v` below reports “command not found”, install the current **LTS** version from [nodejs.org](https://nodejs.org/en/download/), then quit and reopen VS Code.
-
-In the VS Code terminal, run:
-
-```sh
-node -v
-npm -v
-```
-
-Both commands should print a version number.
-
-### Step 3: Install the project packages
-
-In the same terminal, run:
-
-```sh
-npm install
-```
-
-This downloads the libraries the app needs. Normally you only do this once, or again after dependencies change.
-
-### Step 4: Start the app
-
-Run:
-
-```sh
-npm run dev
-```
-
-Open the `http://localhost:...` address printed in the terminal. Leave the terminal running while you use the app. To stop the app, click the terminal and press **Control+C**.
-
-## Part 2: Try the app on your phone over Wi-Fi
-
-This is a local preview, not the installed published app.
-
-1. Make sure your phone and computer are connected to the same Wi-Fi network.
-2. In the VS Code terminal, stop any running server with **Control+C**.
-3. Start the server so other devices on your Wi-Fi can reach it:
+1. Install the current Node.js LTS release from [nodejs.org](https://nodejs.org/).
+2. Open this repository’s `workflow` folder in VS Code. It is the folder containing `package.json`.
+3. Choose **Terminal → New Terminal**, then run:
 
    ```sh
-   npm run dev -- --host
+   npm install
+   npm run dev
    ```
 
-4. Find the **Network** address printed by Vite.
-5. Type that address into your phone's browser.
+4. Open the `http://localhost:...` address Vite prints. Leave the terminal running. Press **Control+C** to stop it.
 
-If the Network address does not open, check that both devices are on the same Wi-Fi and that your computer's firewall allows the connection. For a lasting phone install, publish the app and use its HTTPS address in Part 4.
+To test on a phone on the same Wi-Fi, stop the server and run `npm run dev -- --host`. Open the **Network** address Vite prints on the phone. This is only a preview; use the published HTTPS site for a lasting install.
 
-## Part 3: Publish the app with GitHub Pages
+### B. Back up your information
 
-### Step 1: Open the existing GitHub repository
+Use **Settings → Back up now** regularly and keep the downloaded JSON somewhere private. Local browser data does not automatically copy to another browser. Cloud sync is not a backup against mistaken edits or deletion. Removing an account or workspace cannot remove JSON files already downloaded to your devices.
 
-This project is already connected to the [`Workflow-app` repository](https://github.com/jakedekock28-crypto/Workflow-app). You do **not** need to create another repository or run `git remote add origin`.
+### C. Publish the website with GitHub Pages
 
-1. Sign in at [github.com](https://github.com).
-2. Open [jakedekock28-crypto/Workflow-app](https://github.com/jakedekock28-crypto/Workflow-app).
-3. Confirm the latest project files appear on the `main` branch.
+This repository is already connected to [jakedekock28-crypto/Workflow-app](https://github.com/jakedekock28-crypto/Workflow-app). You do not need to create another repository or add a Git remote.
 
-### Step 2: Turn on GitHub Pages
+1. On GitHub, open the repository and select **Settings → Pages**.
+2. Set **Build and deployment → Source** to **GitHub Actions**.
+3. Select **Actions** and wait for **Deploy Workflow to GitHub Pages** to finish with a green check.
+4. Open the site URL shown in **Settings → Pages**. For this repository it is normally:
 
-Do this on **GitHub in your web browser**:
+   `https://jakedekock28-crypto.github.io/Workflow-app/`
 
-1. Open the repository and choose **Settings**.
-2. In the left menu, choose **Pages**.
-3. Under **Build and deployment**, set **Source** to **GitHub Actions**.
-4. Open the repository's **Actions** tab. Wait for **Deploy Workflow to GitHub Pages** to finish with a green check. Select a run to see its build or deployment details.
-5. Return to **Settings → Pages** and open the website address GitHub shows.
+For later code changes, from the `workflow` folder run `npm run build`, then commit and push. GitHub Actions publishes the new version. GitHub Pages is free for public repositories on GitHub Free; see [GitHub Pages availability and limits](https://docs.github.com/en/pages/getting-started-with-github-pages/github-pages-limits). Do not add private data or credentials to repository files.
 
-GitHub's [Pages publishing guide](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site) describes these settings. This repository already contains the build and deploy workflow at `.github/workflows/deploy.yml`.
+### D. Install it on your phone
 
-### How the website address is chosen
+Open the published HTTPS site once, then:
 
-For the current project repository, the website address is usually:
+- **iPhone/iPad:** open in Safari → **Share → Add to Home Screen**.
+- **Android:** open in Chrome → browser menu → **Install app** or **Add to Home screen**.
 
-```text
-https://jakedekock28-crypto.github.io/Workflow-app/
-```
+The app shell can work offline after it has loaded. Sign-in and cloud sync need the internet. Browser alerts depend on device/browser support and permission; Workflow must remain open, so they are not a guaranteed alarm service. Notification text is generic and does not include task details.
 
-The workflow sets the Vite base path from the repository name automatically. You do not need to change it for this address. If you use a custom domain or rename the repository to `jakedekock28-crypto.github.io`, edit the `VITE_BASE_PATH` line in `.github/workflows/deploy.yml` to `/` before pushing.
+### E. Create delegated tasks and send reminders yourself
 
-### Step 3: Publish later changes
+1. In **Delegated**, add a person with their name and email address. Role is optional. There are no phone, SMS, or notes fields.
+2. Optionally create a group from saved people.
+3. Create a delegated task and fill in its title, description, requirements/checklist, due date/time, priority, and assignees.
+4. Select **Preview email** to check the message.
+5. Select **Send reminder** to open your email app with a draft. Review it and press Send in that email app.
+6. Return to Workflow and select **I sent it** only if you actually sent it. This records your confirmation; Workflow cannot verify delivery.
 
-After you edit files in VS Code, run these commands from the `workflow` folder:
+Email drafts and confirmation history are local browser data. Confirmed reminder history expires after 90 days by default; change it from **Delegated → Reminder log retention** (30–365 days). Browser alerts are local to that device and run only while Workflow is open. There is no server-side reminder scheduler or delivery log. In cloud mode, tasks and contacts sync by workspace, while the app’s calendar/events remain on that device.
 
-```sh
-npm run build
-git add .
-git commit -m "Describe your change"
-git push
-```
+## Part 2 — Set up cloud workspaces (optional)
 
-The build checks and creates the production app. The push uploads your change, then GitHub Actions builds and republishes the website. To check progress, open **GitHub → your repository → Actions**.
+Cloud mode requires three setup steps: make a Google OAuth client, create/deploy the Worker and D1 database, then add two public build variables to GitHub. Do not enter payment details or upgrade any account. Stop if a provider asks you to add a card or select a paid plan.
 
-## Part 4: Install the published app on your phone
+### What you need to do in provider dashboards
 
-First open the published HTTPS website from Part 3 and let it finish loading once.
+#### 1. Google sign-in client
 
-- **iPhone/iPad:** open the site in Safari, tap **Share**, then **Add to Home Screen**.
-- **Android:** open the site in Chrome, open the browser menu, then tap **Install app** or **Add to Home screen**.
+1. Open [Google Cloud Console](https://console.cloud.google.com/) and create/select a project.
+2. Configure the OAuth consent/branding screen with the app name and contact details. Set its URLs to the following after replacing the bracketed fields in the policy pages:
 
-Open the installed app once while online. The app shell can then open offline. Google sync, web links and phone sharing still need an internet connection or the relevant phone app.
+   - Homepage: `https://jakedekock28-crypto.github.io/Workflow-app/`
+   - Privacy: `https://jakedekock28-crypto.github.io/Workflow-app/privacy.html`
+   - Terms: `https://jakedekock28-crypto.github.io/Workflow-app/terms.html`
 
-## Google integrations
+   The pages are included in `public/` and linked in the app footer. Review Google’s domain verification requirement below before relying on cloud login.
+3. Create an OAuth client of type **Web application**.
+4. Add these **Authorized JavaScript origins**:
 
-Google sign-in, Calendar sync, Drive attachments and Drive cloud backup are **not implemented in the current app**. Google Cloud setup and GitHub variables alone will not add these features. When the integration code is ready, use the separate [Google integrations: manual setup guide](GOOGLE-SETUP.md) for the account setup you need to complete yourself.
+   - `https://jakedekock28-crypto.github.io`
+   - `http://localhost:5173`
 
-## Troubleshooting
+   For localhost testing with another port, add that exact origin too.
 
-| What you see | What to check |
+5. Enable only basic sign-in identity (`openid`, `email`, `profile`). Do not enable Gmail, Calendar, Drive, or other Google API access.
+6. Copy the OAuth **Client ID** (not a client secret). A browser client ID is public, but do not publish credentials or service keys.
+
+Google’s [official client-ID setup](https://developers.google.com/identity/gsi/web/guides/get-google-api-clientid) requires an authorized domain. For a private trial, choose **External**, keep the OAuth app in **Testing**, and request only `openid`, `email`, and `profile`. Google documents that apps requesting only basic identity scopes can use the sign-in exception in Testing. For a public production launch, Google requires domain ownership verification for the top-level private domain used by your app. This Pages address is under the shared `github.io` domain, which you do not own, so production verification is blocked unless Google changes its requirements or you use a domain you own. Do not buy a domain to work around it. Local mode remains available; keep cloud access in a testing setup until Google confirms the free-hosted address can be used.
+
+#### 2. GitHub Pages repository settings
+
+The repository must be public to use GitHub Pages under GitHub Free. In **Settings → Pages**, set the source to **GitHub Actions**. The deployment workflow already exists at `.github/workflows/deploy.yml`.
+
+After deploying the Worker in the next section, add these under **Settings → Secrets and variables → Actions → Variables**:
+
+| Variable name | Value |
 | --- | --- |
-| `npm` or `node` is not found | Install Node.js LTS, fully quit and reopen VS Code, then try `node -v` and `npm -v` again. |
-| `npm run dev` says the port is busy | Stop the other Vite server with Control+C, or open the new port Vite prints. |
-| Git says `origin` already exists | You have already connected this folder to a remote. Check it with `git remote -v`; do not add another `origin`. |
-| GitHub Pages has no site or shows an old build | Check **Actions** for a green deployment run, then check **Settings → Pages → Source** is **GitHub Actions**. |
-| The Pages site is blank | Check that `VITE_BASE_PATH` matches the site URL and that the latest Actions run succeeded. A normal repository URL uses `/<repository-name>/`; a user site or custom domain at the root uses `/`. |
+| `VITE_API_BASE_URL` | Your Worker base URL, e.g. `https://workflow-api.<your-subdomain>.workers.dev` (no `/health`) |
+| `VITE_GOOGLE_CLIENT_ID` | The Google Web OAuth Client ID |
 
-## Data, privacy and reminders
+These values are public browser configuration, so use **Variables**, not **Secrets**. Never put API keys, passwords, or private keys in either the frontend variables or the repository.
 
-Without Google connected, app data is held in browser local storage on this device. It does not sync to another browser or phone. Clearing browser site data can erase it, so download a JSON backup from **Settings → Back up now** first.
+#### 3. Cloudflare account
 
-Google sync is not available in this version. When added, Calendar and Drive data will be sent directly between your browser and your own Google account using permissions you approve; the app has no Workflow server. Review event notes and task details before syncing them to a calendar.
+Create a Cloudflare account on the Free plan. This app needs Workers, D1, and one daily Cron Trigger for old audit-log cleanup. It does **not** need an email-sending service or any secret key. The Worker enforces exact app-origin CORS and checks current workspace membership on each API request.
 
-The Today and Delegated screens are the dependable reminders when you open the app. A static site without a backend cannot reliably send background push notifications to iPhones.
+### What you do in this project terminal
 
-## Build and verification
+Run commands from the repository’s `workflow` folder unless a step says `worker`.
 
-From the `workflow` folder:
-
-```sh
-npm run build
-npm run preview
-```
-
-The build runs strict TypeScript checking and creates the production bundle, PWA manifest and service worker. Preview the built app at the local address Vite prints. Real phone installation and offline behaviour must be checked on the deployed HTTPS site; a local production build cannot confirm phone browser behaviour.
-
-## Licence
-
-MIT. See [LICENSE](LICENSE).
-
-## Delegated tasks: this phase and your part
-
-Delegated tasks work with the app's local browser storage. There is no login, online contact database, email service, SMS service, or automatic reminder worker in this release. Your people, task assignments, templates, and message history stay in this browser and should be included in your regular JSON backups.
-
-### Set up your contacts
-
-1. Open **Delegated** in the bottom navigation.
-2. Choose **Add person** and enter their name, email, and/or Australian mobile number. Local mobile input such as `0412 345 678` is saved in `+61412345678` format.
-3. Confirm SMS consent only when the person has agreed to receive SMS. The app does not offer an SMS draft when consent is off.
-4. Use **Manage people** to edit contact details, deactivate or reactivate a person, or delete them. Deleting also removes that person from groups and existing task assignments.
-5. Choose **New group** to create a group. Enter the contact numbers shown in the prompt, separated by commas (for example `1,3`). Groups are shortcuts to roster members.
-
-Older delegated tasks that only had a typed name are migrated into saved contacts. Those contacts are marked **Check migrated contact** because the old app did not have verified email, mobile, or consent details. Review these before making contact.
-
-### Create and message a delegated task
-
-1. Use the **+** button and choose **Delegate**.
-2. Enter the title, date and time, description, requirements, priority, and optional event.
-3. Select one or more active people. The picker shows group headings and their members; select the individual members listed under the group. On a computer, hold **Command** (Mac) or **Ctrl** (Windows) to select multiple options.
-4. Set the task's reminder preferences. In this phase they are saved with the task for planning; they do not send automatically.
-5. Open the task in **Delegated**. **Preview** shows the prepared email and SMS text with placeholders filled in. Update the template from **Message templates**.
-6. Choose **Email** or **SMS** to open a draft in the device's mail or messaging app. Check the recipient and message, then send it there. Workflow does not send it itself.
-7. Return to Workflow and choose **I sent it** only after you sent the message. This records a local, user-confirmed history entry. It does not prove delivery. Do not log the message if you cancelled or did not send it.
-
-Messages are prepared one recipient at a time. Bulk sending, automated scheduling, provider delivery logs, retries, and resend queues are not part of this phase. Email templates and message history can contain personal task details, so protect your device and backups.
-
-### Checks for this phase
-
-Run these from the `workflow` folder:
+#### 1. Install Worker tools and log in
 
 ```sh
 npm install
-npm test
-npm run build
+npm --prefix worker install
+npm --prefix worker exec -- wrangler login
 ```
 
-`npm test` covers legacy data migration, Australian phone formatting, template rendering, and reminder schedule calculations. These checks do not send messages or connect to a provider.
+`wrangler login` opens Cloudflare in your browser for authorization.
 
-### Later integration work
-
-## Part 5: Turn on private cloud accounts and sync (Phase 2)
-
-This part is optional. Skip it if you only want to use the app on one browser/device. Phase 2 adds email-link sign-in and private cloud sync using Cloudflare Workers + D1, Resend, and Cloudflare Turnstile. **It does not send delegated-task reminders yet.** Scheduled task notifications are a later phase; SMS sending is not part of the approved design.
-
-There are two kinds of work below:
-
-- **You do once in provider dashboards:** make accounts, verify a sending domain, create a database/security widget, and store service secrets.
-- **You do in this project:** install Worker packages, configure its public IDs/settings, run database migrations, and deploy the Worker.
-
-### Before you start: accounts and information you need
-
-Have access to:
-
-1. The GitHub repository and permission to edit its settings and Actions variables.
-2. A Cloudflare account where you can create a Worker, D1 database, and Turnstile widget.
-3. A domain you control for sending sign-in emails. Resend requires you to verify the domain by adding the DNS records it provides. You can use a subdomain such as `mail.example.com`; do not use `example.com` literally.
-4. A Resend account and an API key.
-
-Keep the Cloudflare and Resend dashboards open. Provider dashboards may use different labels over time, but the values you need are named below.
-
-### A. Set up and deploy the Worker (project + Cloudflare)
-
-Open the project’s `worker` folder in a terminal. In VS Code, choose **Terminal → New Terminal**, then run:
+#### 2. Create a D1 database
 
 ```sh
-cd worker
-npm install
-npx wrangler login
+npm --prefix worker exec -- wrangler d1 create workflow-production --location=oc
 ```
 
-`wrangler login` opens a browser so you can authorize this computer with your Cloudflare account.
+`oc` is an Oceania location hint, not a promise that all processing or storage stays in Australia. Copy the returned database ID into `worker/wrangler.jsonc`, replacing the all-zero example ID. If this database already exists in your Cloudflare account, use its existing ID; do not create duplicates.
 
-#### 1. Create the database
+#### 3. Set the Google client ID and apply the database migration
 
-In that same terminal, run:
+In `worker/wrangler.jsonc`, replace `SET_IN_GOOGLE_CLOUD_CONSOLE` with your Google Client ID. Check that `APP_URL` exactly matches the published app address including `/Workflow-app/`.
+
+Then apply the schema and privacy migration to the remote database:
 
 ```sh
-npx wrangler d1 create workflow-production
+npm run worker:db:migrate:remote
 ```
 
-Cloudflare prints a `database_id`. Open `worker/wrangler.jsonc` and replace the example `database_id` (`00000000-0000-0000-0000-000000000001`) with that value. The ID identifies the database; it is not a password. Keep `database_name` as `workflow-production`.
+The migration creates workspace-scoped records and removes legacy phone/SMS fields and old magic-link records. It also removes the previous cloud calendar/area/event data; calendar data is local-only in this release. Before running it on an existing database, download a JSON backup from the old app and review the migration. This schema migration cannot be rolled back to restore dropped records.
 
-Apply the tables to the Cloudflare database:
+#### 4. Deploy the Worker
 
 ```sh
-npm run db:migrate:remote
+npm run worker:deploy
 ```
 
-#### 2. Verify Resend email sending
+Wrangler prints a URL like `https://workflow-api.<your-subdomain>.workers.dev`. Open that URL with `/health` appended; it should return `{"status":"ok"}`. Use the base URL without `/health` for `VITE_API_BASE_URL` in GitHub.
 
-In Resend, add a sending domain and follow its instructions to add the listed DNS records at the company where you manage the domain. Wait until Resend shows the domain as verified. Create an API key with permission to send from that verified domain.
+#### 5. Add GitHub variables and publish the configured app
 
-Open `worker/wrangler.jsonc` and replace `no-reply@example.com` in `RESEND_FROM` with an address at your verified domain, for example `Workflow <no-reply@mail.example.com>`.
+Add `VITE_API_BASE_URL` and `VITE_GOOGLE_CLIENT_ID` in GitHub as described above. Then open **Actions → Deploy Workflow to GitHub Pages** and select **Run workflow**, or push a commit to `main`. After it finishes, reload the Pages site and open **Settings → Account**.
 
-Store the Resend API key as a Cloudflare Worker secret (the command will prompt for it; paste it at the prompt):
+Sign in with Google. On a new empty account, the app offers to import existing local app data; choose whether to import. Invite links are copied for the workspace owner to share directly. The invitee must sign in with the invited email address and accept the single-use link before expiry. No invitation email is sent.
+
+### Workspace actions and who can see tasks
+
+- **Owner:** manages workspace, members, roles, exports and deletion; sees all tasks.
+- **Admin:** manages workspace data and members; sees all tasks.
+- **Delegator:** creates and edits tasks they created, and sees tasks they created or are assigned to.
+- **Member:** sees assigned tasks by default and can update progress on assigned tasks.
+- The Owner can change the workspace setting to let all members see all tasks.
+
+Members are checked against the current membership on every cloud request. Removing a member deletes their linked contact data and removes their access. Removing a cloud record does not delete local browser copies or backups that were already downloaded.
+
+The workspace owner can export workspace data, remove completed tasks, set audit retention (30–365 days, default 90), and delete the workspace. Account deletion is in **Settings → Workspaces → Delete account**. Owners may need to transfer ownership or remove members first. To remove everything stored in the service, use workspace deletion and account deletion as appropriate, and separately delete device backups.
+
+### Local development of cloud mode
+
+Use a local D1 database and Worker, then run the frontend in another terminal. Local setup does not send email and does not need provider keys.
+
+From the project root:
 
 ```sh
-npx wrangler secret put RESEND_API_KEY
+npm run worker:db:migrate:local
+npm run worker:dev -- --var APP_URL:http://localhost:5173/
 ```
 
-#### 3. Add the sign-in security check
-
-In the Cloudflare dashboard, open **Turnstile**, add a widget, and allow the hostname `jakedekock28-crypto.github.io`. Copy its **site key** into `TURNSTILE_SITE_KEY` in `worker/wrangler.jsonc` (replace `SET_IN_CLOUDFLARE_DASHBOARD`).
-
-Store the widget’s **secret key** separately as a Worker secret:
+In a second terminal, also from the project root:
 
 ```sh
-npx wrangler secret put TURNSTILE_SECRET_KEY
+VITE_API_BASE_URL=http://localhost:8787 VITE_GOOGLE_CLIENT_ID=your-client-id npm run dev
 ```
 
-The site key is public and is used by the browser form. The secret key must stay in Cloudflare. The Worker checks the challenge on the server and checks that its hostname matches `APP_URL`.
+Add `http://localhost:5173` as a Google authorized JavaScript origin. The Worker command overrides `APP_URL` only for this local run; your production URL in `worker/wrangler.jsonc` stays unchanged.
 
-#### 4. Confirm the app address and deploy
+### Free-tier limits and cost guardrails
 
-The supplied `APP_URL` in `worker/wrangler.jsonc` already points to this project’s GitHub Pages address:
+The plan is to use only the provider free tiers and to stop when a free limit blocks the service. Do not enable a paid plan or add a card. Check the linked official pages again before setup because provider limits can change.
 
-```text
-https://jakedekock28-crypto.github.io/Workflow-app/
-```
-
-If your published app uses a different hostname, change `APP_URL` to the full app URL, update the allowed hostname in the Turnstile widget, and save. Then deploy from the `worker` folder:
-
-```sh
-npm run deploy
-```
-
-Wrangler prints the Worker address, normally like `https://workflow-api.<your-workers-subdomain>.workers.dev`. Open that address with `/health` appended. You should see `{"status":"ok"}`. Save the base Worker address without `/health`; you need it for GitHub in the next section.
-
-### B. Connect the published website (GitHub)
-
-This step tells the website which Worker to contact. The Worker address is public, so it is an **Actions variable**, not a secret.
-
-1. Open the repository on GitHub and choose **Settings**.
-2. Choose **Secrets and variables → Actions → Variables → New repository variable**.
-3. Set the name to `VITE_API_BASE_URL`.
-4. Set the value to the Worker base address from the previous section, for example `https://workflow-api.<your-workers-subdomain>.workers.dev` (no `/health` and no trailing route).
-5. Save it, then open **Actions** and choose **Deploy Workflow to GitHub Pages → Run workflow**. If the button is unavailable, make a small commit and push it to `main`; the normal workflow will deploy the app.
-6. When the run succeeds, reload the published site. Open **Settings → Account** to request a sign-in link.
-
-The existing deploy workflow reads `VITE_API_BASE_URL` during its build. Do not put `RESEND_API_KEY` or `TURNSTILE_SECRET_KEY` in GitHub; only the Worker needs those secrets.
-
-### C. Sign in and move existing browser data into the cloud
-
-1. Open the published app while online and go to **Settings → Account**.
-2. Enter your email and complete the security check. Select **Send sign-in link**.
-3. Open the email from Workflow on the same browser/device and select its link. The link expires after 10 minutes and can only be used once.
-4. If this is a new, empty account and this browser has data, the app asks whether to copy the browser’s data into the account. Confirm to import it, or cancel to start the cloud account empty. Import does not overwrite an account that already contains data.
-5. Open the app on another device/browser and sign in with the same email. Cloud data will load there. Keep making JSON backups from **Settings → Back up now**.
-
-Cloud sessions expire after 7 days, then you can request another link. If you close or lose the one-time link before opening it, request a new one.
-
-### Optional: run the Worker locally
-
-Use this to try the cloud sign-in flow before deploying. You need a valid Resend API key and a sender address verified with Resend to receive real email. Turnstile publishes test keys for local testing; these always pass and must never be used in production.
-
-From the project root, copy the example secrets file, then open `worker/.dev.vars` and add your Resend key:
-
-```sh
-cp worker/.dev.vars.example worker/.dev.vars
-```
-
-In `worker/.dev.vars`, set `RESEND_API_KEY` to your real Resend key. The example Turnstile secret is a test key. In one terminal, start the Worker in development mode:
-
-```sh
-npm run worker:dev -- --var APP_ENV:development --var APP_URL:http://localhost:5173/ --var TURNSTILE_SITE_KEY:1x00000000000000000000AA
-```
-
-In a second terminal, from the project root, start the frontend with the local Worker URL:
-
-```sh
-VITE_API_BASE_URL=http://localhost:8787 npm run dev
-```
-
-Open the localhost address printed by Vite. `.dev.vars` is ignored by Git. Never commit it or paste API keys into source files.
-
-### What it costs and what the limits mean
-
-At the current provider free tiers, a small personal deployment can cost **$0/month** if you stay under their included limits:
-
-| Service | Current free allowance relevant here | What can cause a charge or stop |
+| Provider | Current relevant free allowance | What happens at the limit |
 | --- | --- | --- |
-| Cloudflare Workers | 100,000 requests/day on Workers Free | The app may need the $5/month Workers Paid plan for higher limits or operational needs. |
-| Cloudflare D1 | 5 million rows read/day, 100,000 rows written/day, and up to 5 GB total free account storage | Free daily limits are enforced; requests can fail until the daily reset if exceeded. |
-| Cloudflare Turnstile | Free plan, including up to 20 widgets/account | No per-challenge charge on the stated free plan. |
-| Resend | 100 emails/day and 3,000 emails/month | Phase 2 caps sign-in sends at 90/day to leave margin under the daily limit. Exceeding Resend plan limits may block delivery or require a paid plan. |
+| Cloudflare Workers | 100,000 requests/day; 10 ms CPU per request on Free | Requests can fail until the daily reset. Do not upgrade. |
+| Cloudflare D1 | 5 million rows read/day, 100,000 rows written/day, 5 GB total storage on Free | Database operations can be rejected/limited. Do not upgrade. |
+| Cloudflare D1 databases | Up to 10 databases on Workers Free | Delete an unused database or stay within the limit. Do not upgrade. |
+| Cloudflare Cron | Free supports up to 5 Cron Triggers per account; this project uses one daily trigger for audit cleanup | The Free Cron CPU limit is 10 ms per run. This small cleanup can stop/fail at the limit; do not upgrade. |
+| GitHub Pages | Available on GitHub Free for public repositories | Keep the repository public or use local mode; do not pay to make a private Pages site. |
+| Google sign-in | Basic identity sign-in uses Google Identity Services; this app requests no paid Google API | Domain/branding verification may block the GitHub Pages hostname as explained above. |
 
-These are provider limits, not a promise that every usage pattern will remain free. Check the live [Workers pricing](https://developers.cloudflare.com/workers/platform/pricing/), [D1 pricing](https://developers.cloudflare.com/d1/platform/pricing/), [Turnstile plans](https://developers.cloudflare.com/turnstile/plans/), and [Resend pricing](https://resend.com/pricing) before expanding use. Phase 2 sends only sign-in email. Task reminders and their email volume are not included in these estimates.
+Official sources checked 13 November 2026: [Workers pricing](https://developers.cloudflare.com/workers/platform/pricing/), [Workers limits](https://developers.cloudflare.com/workers/platform/limits/), [D1 pricing](https://developers.cloudflare.com/d1/platform/pricing/), [Cron Triggers](https://developers.cloudflare.com/workers/configuration/cron-triggers/), [D1 location hints](https://developers.cloudflare.com/d1/configuration/data-location/), and [GitHub Pages limits](https://docs.github.com/en/pages/getting-started-with-github-pages/github-pages-limits). The Worker does not send mail, so there is no email provider quota or chance of unexpected email charges. Cloudflare Free limits reject requests/queries when reached; do not switch to Workers Paid.
 
-### Important privacy and current limitations
+### Privacy and Australian data-location checks
 
-- Local-only data stays in that browser. Cloud accounts sync only after setup and sign-in.
-- Cloud sign-in uses a browser session token stored locally in the browser for up to 7 days. Anyone who can run malicious script in the app page could potentially access that token; keep the published app and browser up to date and use a trusted device.
-- Your account is private to your verified email, and database queries are scoped to that account. Provider administrators still operate the infrastructure under their service terms.
-- Keep regular JSON backups. Cloud sync is not a backup against mistakes: edits and deletions sync too.
-- Phase 2 does not send task assignments, reminders, SMS, or push notifications. It does not yet have a notification scheduler or delivery log.
-- Offline edits queue in this browser and sync when it reconnects. If two devices edit the same item while offline, the most recent pending/local version can win when syncing; there is no conflict review screen yet.
+The app stores account identifier/email, workspace membership and settings, names/emails/optional roles for contacts, groups, and task information in cloud mode. Session tokens are stored as hashes server-side; rate-limit identifiers are hashed. Task, contact, group, invite, or email details are not included in URL parameters, analytics, or application error logs. Emails are masked in server logs. Google receives sign-in identity only. Cloudflare hosts the Worker and D1 database; GitHub Pages serves the app. Do not enter children's details or sensitive/operational information.
 
-### If something goes wrong
+The privacy and terms documents are Australian-user templates and must be completed and reviewed by the workspace owner. Check whether the Privacy Act 1988 and Australian Privacy Principles apply to you, and consider overseas disclosure under APP 8. Cloudflare's Oceania hint is not an Australia-only data-location guarantee; Google's and GitHub's processing can also occur outside Australia. See the [OAIC APP 8 guidance](https://www.oaic.gov.au/privacy/australian-privacy-principles/australian-privacy-principles-guidelines/chapter-8-app-8-cross-border-disclosure-of-personal-information). This is not legal advice.
 
-| Problem | Check this |
+### Troubleshooting
+
+| Problem | What to check |
 | --- | --- |
-| **Settings → Account** says cloud sync is not configured | Confirm the GitHub Actions variable is named exactly `VITE_API_BASE_URL`, then rerun the Pages deployment. |
-| Worker `/health` does not show `{"status":"ok"}` | Confirm the Worker deployed successfully in the Cloudflare dashboard and use its exact `workers.dev` address. |
-| Sign-in says the security check failed | Confirm the Turnstile site key and secret belong to the same widget, the app hostname is allowed, and `APP_URL` is correct. |
-| No sign-in email arrives | Check Resend’s domain verification, sender address, API key secret, Resend email logs, and spam folder. |
-| Login email says send failed | Check `RESEND_API_KEY` and `RESEND_FROM` Worker settings/secrets, then redeploy after changing a non-secret `wrangler.jsonc` value. |
-| Sync says the session expired | Request a new sign-in email; sessions last 7 days. |
-| Local Worker has missing tables | From the project root, run `npm run worker:db:migrate:local`, then restart `npm run worker:dev`. |
+| `node` or `npm` not found | Install Node.js LTS and restart VS Code. |
+| Pages site is blank or old | Check **Actions** for a successful deployment and **Settings → Pages** for GitHub Actions source. |
+| `Settings → Account` says cloud is not configured | Check GitHub Actions variables are exactly `VITE_API_BASE_URL` and `VITE_GOOGLE_CLIENT_ID`, then redeploy Pages. |
+| Worker `/health` fails | Confirm `npm run worker:deploy` succeeded and use the exact `workers.dev` URL. |
+| Google sign-in rejects the website origin | Check the OAuth client origin and the authorized-domain ownership/verification issue described in Google setup. The default GitHub hostname may not be accepted. |
+| Invite cannot be accepted | The signed-in Google email must match the invite email, and the one-use link must not be expired or already used. Ask the owner to copy a new invite link. |
+| A cloud action is forbidden | Ask the workspace owner to check your active membership and role. Changes to membership take effect on the next request. |
+| Sync does not work offline | Offline changes wait in the browser until it reconnects. Keep backups and avoid editing the same record on multiple offline devices. |
+| Email reminder not sent | Workflow only opened a draft. Send it from your email app; the app cannot verify delivery. |
 
-### Phase 2 developer checks
+## Developers: test and build
 
-From the project root, run:
+From the repository root:
 
 ```sh
 npm install
@@ -388,8 +249,8 @@ npm test
 npm run build
 ```
 
-The tests cover local data migration, phone formatting, message templates, reminder calculations, cloud offline merge behavior, and account data isolation in D1. Build output is split into smaller JavaScript files so the previous Vite warning about a chunk larger than 500 kB no longer appears.
+`npm test` runs frontend migration/notification/cloud-client tests and Worker permissions/data-isolation tests. `npm run build` runs TypeScript checks for both app and Worker, then creates the production PWA files in `dist/`. To preview that production build locally, run `npm run preview`.
 
-## Later phase
+## License
 
-The next stage, Phase 3, is the hosted notification service: scheduled task reminders through a Cloudflare Cron Trigger and Resend email, plus delivery logging and retries. It is not part of Phase 2. SMS automation is excluded from the approved design.
+MIT. See [LICENSE](LICENSE).

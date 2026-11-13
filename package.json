@@ -14,10 +14,8 @@
     "worker:db:migrate:remote": "npm --prefix worker run db:migrate:remote"
   },
   "dependencies": {
-    "@marsidev/react-turnstile": "^1.6.3",
     "date-fns": "^4.1.0",
     "framer-motion": "^12.23.0",
-    "libphonenumber-js": "^1.13.16",
     "lucide-react": "^0.468.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
